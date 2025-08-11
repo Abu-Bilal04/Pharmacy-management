@@ -49,6 +49,62 @@ if ($row = $result->fetch_assoc()) {
     <script src="https://unpkg.com/@popperjs/core@2"></script>
     <!-- Main Styling -->
     <link href="../assets/css/argon-dashboard-tailwind.css?v=1.0.1" rel="stylesheet" />
+
+
+  <style>
+        
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: none;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 12px 8px;
+      border: none;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+
+    thead {
+      background-color: transparent;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    @media screen and (max-width: 768px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead tr {
+        display: none;
+      }
+
+      td {
+        position: relative;
+        padding-left: 50%;
+        border: none;
+      }
+
+      td::before {
+        position: absolute;
+        top: 12px;
+        left: 8px;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: bold;
+        content: attr(data-label);
+      }
+    }
+  </style>
   </head>
 
   <body class="m-0 font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-gray-50 text-slate-500">
@@ -59,7 +115,7 @@ if ($row = $result->fetch_assoc()) {
         ?>
         <script>
             iziToast.success({
-                title: '',
+                title: 'Success',
                 message: 'Purchase Added Successfully!',
                 position: 'topRight',
                 animateInside: true,
@@ -118,14 +174,14 @@ if ($row = $result->fetch_assoc()) {
             </a>
           </li>
 
-          <li class="mt-0.5 w-full">
+          <!-- <li class="mt-0.5 w-full">
             <a class="py-2.7 dark:text-white dark:opacity-80 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 text-slate-700 transition-colors" href="price_list.php">
               <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5">
                 <i class="relative top-0 text-sm leading-normal text-blue-500 ni ni-tag"></i>
               </div>
               <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">Price list</span>
             </a>
-          </li>
+          </li> -->
 
            <li class="mt-0.5 w-full">
             <a class="py-2.7 bg-blue-500/13 dark:text-white dark:opacity-80 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 font-semibold text-slate-700 transition-colors" href="purchases.php">
@@ -186,7 +242,7 @@ if ($row = $result->fetch_assoc()) {
           </li>
 
           <li class="mt-0.5 w-full">
-            <a class=" dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="login.php">
+            <a class=" dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="logout.php">
               <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5">
                 <i class="relative top-0 text-sm leading-normal text-orange-500 ni ni-user-run"></i>
               </div>
@@ -334,89 +390,110 @@ if ($row = $result->fetch_assoc()) {
            
               <div class="flex-auto p-6 pt-0">
                 <br>
-                <table class="items-center w-full mb-0 align-top border-collapse dark:border-white/40 text-slate-500">
-                    Manage Records
-                    <thead class="align-bottom">
+                  <table class="items-center w-full mb-0 align-top border-collapse dark:border-white/40 text-slate-500">
+                    <caption style="text-align:left; font-weight:bold; margin-bottom:10px;">Manage Records</caption>
+                    
+                    <thead>
                       <tr>
-                        <th class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Product</th>
-                        <th class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Company</th>
-                        <th class="px-6 py-3 pl-2 font-bold text-left uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Price</th>
-                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Package(s)</th>
-                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Cost</th>
-                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Transaction</th>
-                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Action</th>
+                        <small style="color: blue">
+                          POS:  <?php
+                            // Query to get the total POS transactions
+                            $querys = "SELECT SUM(price * package) AS total_pos 
+                                      FROM purchases 
+                                      WHERE transaction = 'POS'";
+
+                            $result = mysqli_query($dbcon, $querys);
+
+                            if (!$result) {
+                                // Handle query error
+                                echo "Error: " . mysqli_error($dbcon);
+                            } else {
+                                $row = mysqli_fetch_assoc($result);
+                                // If no POS transactions, set to 0
+                                $total_pos = $row['total_pos'] ?? 0;
+                                // Display formatted with Naira symbol
+                                echo "&#8358;" . number_format($total_pos, 2);
+                            }
+                            ?>
+                    
+                  
+                          - Transfer:  <?php
+                            // Query to get the total POS transactions
+                            $querys = "SELECT SUM(price * package) AS total_pos 
+                                      FROM purchases 
+                                      WHERE transaction = 'Transfer'";
+
+                            $result = mysqli_query($dbcon, $querys);
+
+                            if (!$result) {
+                                // Handle query error
+                                echo "Error: " . mysqli_error($dbcon);
+                            } else {
+                                $row = mysqli_fetch_assoc($result);
+                                // If no POS transactions, set to 0
+                                $total_pos = $row['total_pos'] ?? 0;
+                                // Display formatted with Naira symbol
+                                echo "&#8358;" . number_format($total_pos, 2);
+                            }
+                            ?>
+                    
+                  
+                          - Cash:  <?php
+                            // Query to get the total POS transactions
+                            $querys = "SELECT SUM(price * package) AS total_pos 
+                                      FROM purchases 
+                                      WHERE transaction = 'cash'";
+
+                            $result = mysqli_query($dbcon, $querys);
+
+                            if (!$result) {
+                                // Handle query error
+                                echo "Error: " . mysqli_error($dbcon);
+                            } else {
+                                $row = mysqli_fetch_assoc($result);
+                                // If no POS transactions, set to 0
+                                $total_pos = $row['total_pos'] ?? 0;
+                                // Display formatted with Naira symbol
+                                echo "&#8358;" . number_format($total_pos, 2);
+                            }
+                            ?>
+                      </small>
+                      </tr>
+                      <hr>
+                      <tr>
+                        <th>Product</th>
+                        <th>Company</th>
+                        <th>Price</th>
+                        <th>Package(s)</th>
+                        <th>Cost</th>
+                        <th>Transaction</th>
                       </tr>
                     </thead>
                     <tbody>
                       <?php
                         $psql = mysqli_query($dbcon,"SELECT * FROM purchases ORDER BY id DESC");
-                        while($prop = mysqli_fetch_array($psql)){ ?>
+                        while($prop = mysqli_fetch_array($psql)) {
+                          $totalCost = $prop['price'] * $prop['package'];
+                      ?>
                       <tr>
-                        <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent text-center">
-                          <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo $prop['product']; ?></p>
-                        </td>
-                        <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent text-center">
-                          <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo $prop['company']; ?></p>
-                        </td>
-                        <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent text-center">
-                          <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo $prop['price']; ?></p>
-                        </td>
-                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <p  class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo $prop['package']. ' pkg'; ?></p>
-                        </td>
-                        <td class="p-2 text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <p  class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo "&#8358;" . number_format($prop['price'] * $prop['package']); ?></p>
-                        </td>
-                        <td class="p-2 text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <p  class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo $prop['transaction']; ?></p>
-                        </td>
-                        <td class="p-2 align-middle bg-transparent text-center border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <a href="javascript:;" class="text-xs font-semibold leading-tight dark:text-white dark:opacity-80 text-slate-400"> Delete </a>
-                        </td>
+                        <td data-label="Product"><?php echo htmlspecialchars($prop['product']); ?></td>
+                        <td data-label="Company"><?php echo htmlspecialchars($prop['company']); ?></td>
+                        <td data-label="Price">&#8358;<?php echo number_format($prop['price']); ?></td>
+                        <td data-label="Package(s)" class="text-center"><?php echo htmlspecialchars($prop['package']) . ' pkg'; ?></td>
+                        <td data-label="Cost" class="text-center">&#8358;<?php echo number_format($totalCost); ?></td>
+                        <td data-label="Transaction" class="text-center"><?php echo htmlspecialchars($prop['transaction']); ?></td>
                       </tr>
                       <?php } ?>
-                     
+
                       
                     </tbody>
-                  </table>
-              </div>
+                  </table> 
+                </div>
             </div>
           </div>
 
         </div>
-        <!-- <footer class="pt-4">
-          <div class="w-full px-6 mx-auto">
-            <div class="flex flex-wrap items-center -mx-3 lg:justify-between">
-              <div class="w-full max-w-full px-3 mt-0 mb-6 shrink-0 lg:mb-0 lg:w-1/2 lg:flex-none">
-                <div class="leading-normal text-center text-sm text-slate-500 lg:text-left">
-                  ©
-                  <script>
-                    document.write(new Date().getFullYear() + ",");
-                  </script>
-                  made with <i class="fa fa-heart"></i> by
-                  <a href="https://www.creative-tim.com" class="font-semibold dark:text-white text-slate-700" >Creative Tim</a>
-                  for a better web.
-                </div>
-              </div>
-              <div class="w-full max-w-full px-3 mt-0 shrink-0 lg:w-1/2 lg:flex-none">
-                <ul class="flex flex-wrap justify-center pl-0 mb-0 list-none lg:justify-end">
-                  <li class="nav-item">
-                    <a href="https://www.creative-tim.com" class="block px-4 pt-0 pb-1 font-normal transition-colors ease-in-out text-sm text-slate-500" >Creative Tim</a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="https://www.creative-tim.com/presentation" class="block px-4 pt-0 pb-1 font-normal transition-colors ease-in-out text-sm text-slate-500" >About Us</a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="https://creative-tim.com/blog" class="block px-4 pt-0 pb-1 font-normal transition-colors ease-in-out text-sm text-slate-500" >Blog</a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="https://www.creative-tim.com/license" class="block px-4 pt-0 pb-1 pr-0 font-normal transition-colors ease-in-out text-sm text-slate-500" >License</a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </footer> -->
+
       </div>
       <!-- end cards -->
     </main>
@@ -429,91 +506,3 @@ if ($row = $result->fetch_assoc()) {
   <!-- main script file  -->
   <script src="../assets/js/argon-dashboard-tailwind.js?v=1.0.1" async></script>
 </html>
-
-
-<!-- <style>
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-  }
-
-  th, td {
-    padding: 12px 8px;
-    border: 1px solid #ccc;
-    text-align: left;
-  }
-
-  thead {
-    background-color: #f0f0f0;
-  }
-
-  tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-
-  .text-center {
-    text-align: center;
-  }
-
-  @media screen and (max-width: 768px) {
-    table, thead, tbody, th, td, tr {
-      display: block;
-    }
-
-    thead tr {
-      display: none;
-    }
-
-    td {
-      position: relative;
-      padding-left: 50%;
-      border: none;
-      border-bottom: 1px solid #eee;
-    }
-
-    td::before {
-      position: absolute;
-      top: 12px;
-      left: 8px;
-      width: 45%;
-      white-space: nowrap;
-      font-weight: bold;
-      content: attr(data-label);
-    }
-  }
-</style>
-
-<table>
-  <caption style="text-align:left; font-weight:bold; margin-bottom:10px;">Manage Records</caption>
-  <thead>
-    <tr>
-      <th>Product</th>
-      <th>Company</th>
-      <th>Price</th>
-      <th class="text-center">Package(s)</th>
-      <th class="text-center">Cost</th>
-      <th class="text-center">Transaction</th>
-      <th class="text-center">Action</th>
-    </tr>
-  </thead>
-  <tbody>
-    <?php
-      // $psql = mysqli_query($dbcon,"SELECT * FROM purchases ORDER BY id DESC");
-      // while($prop = mysqli_fetch_array($psql)) {
-      //   $totalCost = $prop['price'] * $prop['package'];
-    ?>
-    <tr>
-      <td data-label="Product"><?php echo htmlspecialchars($prop['product']); ?></td>
-      <td data-label="Company"><?php echo htmlspecialchars($prop['company']); ?></td>
-      <td data-label="Price">&#8358;<?php echo number_format($prop['price']); ?></td>
-      <td data-label="Package(s)" class="text-center"><?php echo htmlspecialchars($prop['package']) . ' pkg'; ?></td>
-      <td data-label="Cost" class="text-center">&#8358;<?php echo number_format($totalCost); ?></td>
-      <td data-label="Transaction" class="text-center"><?php echo htmlspecialchars($prop['transaction']); ?></td>
-      <td data-label="Action" class="text-center">
-        <a href="javascript:;" onclick="confirm('Are you sure you want to delete this?');">Delete</a>
-      </td>
-    </tr>
-    <?php //} ?>
-  </tbody>
-</table> -->

@@ -1,3 +1,33 @@
+<?php 
+include '../include/server.php'; 
+session_start(); // Needed for $_SESSION access
+
+if (!isset($_SESSION['username']) || empty($_SESSION['username'])) {
+    header('Location: ../index.php');
+    exit();
+}
+
+$username = $_SESSION['username'];
+
+// Use prepared statements to avoid SQL injection
+$stmt = $dbcon->prepare("SELECT username, email, password FROM admin WHERE username = ? LIMIT 1");
+$stmt->bind_param("s", $username);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($row = $result->fetch_assoc()) {
+    $admin = array(
+        'username' => $row['username'],
+        'email' => $row['email'],
+        'password' => $row['password'] // Note: Storing password in session isn't recommended
+    );
+} else {
+    // Invalid session or user not found
+    session_destroy();
+    header('Location: ../index.php');
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -16,11 +46,44 @@
     <link href="../assets/css/nucleo-svg.css" rel="stylesheet" />
     <!-- Popper -->
     <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <!-- iziToast -->
+    <link href="../iziToast/css/iziToast.min.css" rel="stylesheet" />
+    <script src="../iziToast/js/iziToast.min.js"  type="text/javascript"></script>
     <!-- Main Styling -->
     <link href="../assets/css/argon-dashboard-tailwind.css?v=1.0.1" rel="stylesheet" />
   </head>
   <body class="m-0 font-sans antialiased font-normal dark:bg-slate-900 text-base leading-default bg-gray-50 text-slate-500">
-    <div class="absolute bg-y-50 w-full top-0 bg-[url('https://raw.githubusercontent.com/creativetimofficial/public-../assets/master/argon-dashboard-pro/../assets/img/profile-layout-header.jpg')] min-h-75">
+   
+    <?php
+    if (isset($_GET['msg']) && $_GET['msg'] === "success") {
+        ?>
+        <script>
+            iziToast.success({
+                title: 'Success',
+                message: 'Profile Updated Successfully!',
+                position: 'topRight',
+                animateInside: true,
+            });
+        </script>
+    <?php } ?>
+
+
+    <?php
+    if (isset($_GET['msg']) && $_GET['msg'] === "error") {
+        // Safely escape username for JS context
+        $safeUsername = htmlspecialchars($username, ENT_QUOTES, 'UTF-8');
+        ?>
+        <script>
+            iziToast.error({
+                title: '',
+                message: 'An Error Occured, Please Try Again!',
+                position: 'topRight',
+                animateInside: true,
+            });
+        </script>
+    <?php } ?>
+  
+  <div class="absolute bg-y-50 w-full top-0 bg-[url('https://raw.githubusercontent.com/creativetimofficial/public-../assets/master/argon-dashboard-pro/../assets/img/profile-layout-header.jpg')] min-h-75">
       <span class="absolute top-0 left-0 w-full h-full bg-blue-500 opacity-60"></span>
     </div>
 
@@ -56,14 +119,15 @@
             </a>
           </li>
 
-          <li class="mt-0.5 w-full">
+          <!-- <li class="mt-0.5 w-full">
             <a class="py-2.7 dark:text-white dark:opacity-80 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 text-slate-700 transition-colors" href="price_list.php">
               <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5">
                 <i class="relative top-0 text-sm leading-normal text-blue-500 ni ni-tag"></i>
               </div>
               <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">Price list</span>
             </a>
-          </li>
+          </li> -->
+
 
            <li class="mt-0.5 w-full">
             <a class="py-2.7 dark:text-white dark:opacity-80 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 text-slate-700 transition-colors" href="purchases.php">
@@ -124,7 +188,7 @@
           </li>
 
           <li class="mt-0.5 w-full">
-            <a class=" dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="login.php">
+            <a class=" dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="logout.php">
               <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5">
                 <i class="relative top-0 text-sm leading-normal text-orange-500 ni ni-user-run"></i>
               </div>
@@ -182,38 +246,51 @@
                   <button type="button" class="inline-block px-8 py-2 mb-4 ml-auto font-bold leading-normal text-center text-white align-middle transition-all ease-in bg-blue-500 border-0 rounded-lg shadow-md cursor-pointer text-xs tracking-tight-rem hover:shadow-xs hover:-translate-y-px active:opacity-85">Settings</button>
                 </div>
               </div>
-              <div class="flex-auto p-6">
-                <p class="leading-normal uppercase dark:text-white dark:opacity-60 text-sm">User Information</p>
-                <div class="flex flex-wrap -mx-3">
-                  <div class="w-full max-w-full px-3 shrink-0 md:w-6/12 md:flex-0">
-                    <div class="mb-4">
-                      <label for="username" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Username</label>
-                      <input type="text" name="username" value="lucky.jesse" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none" />
+             
+              <form method="post" class="w-full">
+                <div class="flex-auto p-6">
+                  <p class="leading-normal uppercase dark:text-white dark:opacity-60 text-sm mb-4">User Information</p>
+
+                  <div class="flex flex-wrap -mx-3">
+
+                    <!-- Username -->
+                    <div class="w-full max-w-full px-3 mb-4 md:w-6/12">
+                      <label for="username" class="block mb-2 font-bold text-xs text-slate-700 dark:text-white/80">Username</label>
+                      <input type="text" id="username" name="username" 
+                             value="<?php echo htmlspecialchars($admin['username']); ?>"
+                             class="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-normal text-gray-700 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:shadow-primary-outline dark:bg-slate-850 dark:text-white" />
                     </div>
-                  </div>
-                  <div class="w-full max-w-full px-3 shrink-0 md:w-6/12 md:flex-0">
-                    <div class="mb-4">
-                      <label for="email" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Email address</label>
-                      <input type="email" name="email" value="jesse@example.com" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none" />
+
+                    <!-- Email -->
+                    <div class="w-full max-w-full px-3 mb-4 md:w-6/12">
+                      <label for="email" class="block mb-2 font-bold text-xs text-slate-700 dark:text-white/80">Email Address</label>
+                      <input type="email" id="email" name="email" 
+                             value="<?php echo htmlspecialchars($admin['email']); ?>"
+                             class="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-normal text-gray-700 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:shadow-primary-outline dark:bg-slate-850 dark:text-white" />
                     </div>
-                  </div>
-                  <div class="w-full max-w-full px-3 shrink-0 md:w-6/12 md:flex-0">
-                    <div class="mb-4">
-                      <label for="first name" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">First name</label>
-                      <input type="text" name="first name" value="Jesse" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none" />
+
+                    <!-- Password -->
+                    <div class="w-full max-w-full px-3 mb-4 md:w-6/12">
+                      <label for="password" class="block mb-2 font-bold text-xs text-slate-700 dark:text-white/80">Password</label>
+                      <input type="password" id="password" name="password" 
+                             value="<?php echo htmlspecialchars($admin['password']); ?>"
+                             class="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-normal text-gray-700 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:shadow-primary-outline dark:bg-slate-850 dark:text-white" />
                     </div>
-                  </div>
-                  <div class="w-full max-w-full px-3 shrink-0 md:w-6/12 md:flex-0">
-                    <div class="mb-4">
-                      <label for="last name" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Last name</label>
-                      <input type="text" name="last name" value="Lucky" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none" />
+
+                    <!-- Submit Button -->
+                    <div class="w-full max-w-full px-3 mb-4 md:w-6/12 flex items-end">
+                      <button type="submit" name="update_profile"
+                        class="px-4 py-2 rounded-lg bg-blue-500 text-white text-sm font-bold hover:bg-blue-600 transition-all">
+                        Update
+                      </button>
                     </div>
+
                   </div>
+
+                  <hr class="h-px mx-0 my-4 bg-gradient-to-r from-transparent via-black/40 to-transparent opacity-25 dark:via-white" />
                 </div>
-                <hr class="h-px mx-0 my-4 bg-transparent border-0 opacity-25 bg-gradient-to-r from-transparent via-black/40 to-transparent dark:bg-gradient-to-r dark:from-transparent dark:via-white dark:to-transparent " />
-                
-                
-              </div>
+              </form>
+
             </div>
           </div>
 

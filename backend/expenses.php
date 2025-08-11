@@ -58,7 +58,7 @@ if ($row = $result->fetch_assoc()) {
         ?>
         <script>
             iziToast.success({
-                title: '',
+                title: 'Success',
                 message: 'Expense Added Successfully!',
                 position: 'topRight',
                 animateInside: true,
@@ -115,14 +115,15 @@ if ($row = $result->fetch_assoc()) {
             </a>
           </li>
 
-          <li class="mt-0.5 w-full">
+          <!-- <li class="mt-0.5 w-full">
             <a class="py-2.7 dark:text-white dark:opacity-80 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 text-slate-700 transition-colors" href="price_list.php">
               <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5">
                 <i class="relative top-0 text-sm leading-normal text-blue-500 ni ni-tag"></i>
               </div>
               <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">Price list</span>
             </a>
-          </li>
+          </li> -->
+
 
            <li class="mt-0.5 w-full">
             <a class="py-2.7 dark:text-white dark:opacity-80 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 text-slate-700 transition-colors" href="purchases.php">
@@ -183,7 +184,7 @@ if ($row = $result->fetch_assoc()) {
           </li>
 
           <li class="mt-0.5 w-full">
-            <a class=" dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="login.php">
+            <a class=" dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="logout.php">
               <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5">
                 <i class="relative top-0 text-sm leading-normal text-orange-500 ni ni-user-run"></i>
               </div>
@@ -309,8 +310,74 @@ if ($row = $result->fetch_assoc()) {
               <div class="flex-auto p-6 pt-0">
                 <br>
                 <table class="items-center w-full mb-0 align-top border-collapse dark:border-white/40 text-slate-500">
-                    Manage Records
+                    Manage Records <br>
                     <thead class="align-bottom">
+                      <tr>
+                        <small style="color: blue">
+                          POS:  <?php
+                            // Query to get the total POS transactions
+                            $querys = "SELECT SUM(price) AS total_pos 
+                                      FROM expenses 
+                                      WHERE transaction = 'POS'";
+
+                            $result = mysqli_query($dbcon, $querys);
+
+                            if (!$result) {
+                                // Handle query error
+                                echo "Error: " . mysqli_error($dbcon);
+                            } else {
+                                $row = mysqli_fetch_assoc($result);
+                                // If no POS transactions, set to 0
+                                $total_pos = $row['total_pos'] ?? 0;
+                                // Display formatted with Naira symbol
+                                echo "&#8358;" . number_format($total_pos, 2);
+                            }
+                            ?>
+                    
+                  
+                          - Transfer:  <?php
+                            // Query to get the total POS transactions
+                            $querys = "SELECT SUM(price) AS total_pos 
+                                      FROM expenses 
+                                      WHERE transaction = 'Transfer'";
+
+                            $result = mysqli_query($dbcon, $querys);
+
+                            if (!$result) {
+                                // Handle query error
+                                echo "Error: " . mysqli_error($dbcon);
+                            } else {
+                                $row = mysqli_fetch_assoc($result);
+                                // If no POS transactions, set to 0
+                                $total_pos = $row['total_pos'] ?? 0;
+                                // Display formatted with Naira symbol
+                                echo "&#8358;" . number_format($total_pos, 2);
+                            }
+                            ?>
+                    
+                  
+                          - Cash:  <?php
+                            // Query to get the total POS transactions
+                            $querys = "SELECT SUM(price) AS total_pos 
+                                      FROM expenses 
+                                      WHERE transaction = 'cash'";
+
+                            $result = mysqli_query($dbcon, $querys);
+
+                            if (!$result) {
+                                // Handle query error
+                                echo "Error: " . mysqli_error($dbcon);
+                            } else {
+                                $row = mysqli_fetch_assoc($result);
+                                // If no POS transactions, set to 0
+                                $total_pos = $row['total_pos'] ?? 0;
+                                // Display formatted with Naira symbol
+                                echo "&#8358;" . number_format($total_pos, 2);
+                            }
+                            ?>
+                      </small>
+                      </tr>
+                      
                       <tr>
                         <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Product</th>
                         <th class="px-6 py-3 pl-2 font-bold text-center uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Price</th>

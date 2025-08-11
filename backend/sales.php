@@ -1,3 +1,33 @@
+<?php
+include "../include/server.php";
+session_start(); // Needed for $_SESSION access
+
+if (!isset($_SESSION['username']) || empty($_SESSION['username'])) {
+    header('Location: ../index.php');
+    exit();
+}
+
+$username = $_SESSION['username'];
+
+// Use prepared statements to avoid SQL injection
+$stmt = $dbcon->prepare("SELECT username, email, password FROM admin WHERE username = ? LIMIT 1");
+$stmt->bind_param("s", $username);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($row = $result->fetch_assoc()) {
+    $username = $row['username'];
+    $email = $row['email'];
+    $password = $row['password']; // Ideally hashed
+} else {
+    // Invalid session or user not found
+    session_destroy();
+    header('Location: ../index.php');
+    exit();
+}
+?>
+
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -8,6 +38,9 @@
     <title>Rukayyah Pharmacy</title>
     <!--     Fonts and icons     -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+    <!-- iziToast -->
+    <link href="../iziToast/css/iziToast.min.css" rel="stylesheet" />
+    <script src="../iziToast/js/iziToast.min.js"  type="text/javascript"></script>
     <!-- Font Awesome Icons -->
     <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
     <!-- Nucleo Icons -->
@@ -20,6 +53,33 @@
   </head>
 
   <body class="m-0 font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-gray-50 text-slate-500">
+    
+    <?php
+    if (isset($_GET['msg']) && $_GET['msg'] === "success") {?>
+        <script>
+            iziToast.success({
+                title: 'Success',
+                message: 'Sale Added Successfully!',
+                position: 'topRight',
+                animateInside: true,
+            });
+        </script>
+    <?php } ?>
+
+
+    <?php
+    if (isset($_GET['msg']) && $_GET['msg'] === "error") {?>
+        <script>
+            iziToast.error({
+                title: 'Error',
+                message: 'An Error Occured, Please Try Again!',
+                position: 'topRight',
+                animateInside: true,
+            });
+        </script>
+    <?php } ?>
+
+
     <div class="absolute w-full bg-blue-500 dark:hidden min-h-75"></div>
     <!-- sidenav  -->
     <aside class="fixed inset-y-0 flex-wrap items-center justify-between block w-full p-0 my-4 overflow-y-auto antialiased transition-transform duration-200 -translate-x-full bg-white border-0 shadow-xl dark:shadow-none dark:bg-slate-850 max-w-64 ease-nav-brand z-990 xl:ml-6 rounded-2xl xl:left-0 xl:translate-x-0" aria-expanded="false">
@@ -54,14 +114,15 @@
             </a>
           </li>
 
-          <li class="mt-0.5 w-full">
+          <!-- <li class="mt-0.5 w-full">
             <a class="py-2.7 dark:text-white dark:opacity-80 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 text-slate-700 transition-colors" href="price_list.php">
               <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5">
                 <i class="relative top-0 text-sm leading-normal text-blue-500 ni ni-tag"></i>
               </div>
               <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">Price list</span>
             </a>
-          </li>
+          </li> -->
+
 
            <li class="mt-0.5 w-full">
             <a class="py-2.7 dark:text-white dark:opacity-80 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 text-slate-700 transition-colors" href="purchases.php">
@@ -122,7 +183,7 @@
           </li>
 
           <li class="mt-0.5 w-full">
-            <a class=" dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="login.php">
+            <a class=" dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="logout.php">
               <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5">
                 <i class="relative top-0 text-sm leading-normal text-orange-500 ni ni-user-run"></i>
               </div>
@@ -197,45 +258,39 @@
                   <p class="mb-0 dark:text-white/80">Add Sale</p>
                 </div>
               </div>
-              <div class="flex-auto p-6">
+              <form method="post">
+                <div class="flex-auto p-6">
                 <div class="flex flex-wrap -mx-3">
                   <div class="w-full max-w-full px-3 shrink-0 md:w-12/12 md:flex-0">
                     <div class="mb-4">
-                      <label for="company_name" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Product</label>
-                      <input type="text" name="company_name" placeholder="Product name" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none" />
+                      <label class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Product</label>
+                      <input type="text" id="product" name="product" placeholder="Product name" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none" />
+                      <div id="availability" class="text-xs mt-1"></div>
                     </div>
                   </div>
                   <div class="w-6/12 max-w-6/12 px-3 shrink-0 md:w-6/12 md:flex-0">
                     <div class="mb-4">
                       <label for="price" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Price</label>
-                      <input type="number" name="price" placeholder="Product price" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none" />
+                      <input type="text" id="price" name="price_display" readonly class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none" />
+                      <input type="hidden" id="price_numeric" name="price" />
                     </div>
                   </div>
 
                   <div class="w-6/12 max-w-6/12 px-3 shrink-0 md:w-6/12 md:flex-0">
                     <div class="mb-4">
                       <label for="quantity" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Quantity</label>
-                      <input type="number" name="quantity" placeholder="Number of product" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none" />
+                      <input type="number" id="quantity" name="quantity" value="1" min="1" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none" />
                     </div>
-                  </div>
-           
-                <div class="w-full max-w-full px-3 shrink-0 md:w-12/12 md:flex-0">
-                    <div class="mb-4">
-                      <label for="phone" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Total Cost</label>
-                      <input type="number" name="total_cost" placeholder="*** ***" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none" readonly/>
-                    </div>
-                </div>
-
-                
+                  </div>                
                     
                 <div class="w-full max-w-full px-3 shrink-0 md:w-12/12 md:flex-0">
                     <div class="mb-4">
                       <label for="phone" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Payment Type</label>
-                      <select class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
-                        <option name="">Select Payment Type</option>
-                        <option name="cash">Cash</option>
-                        <option name="transfer">Transfer</option>
-                        <option name="pos">POS</option>
+                      <select name="payment_type" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
+                        <option value="">Select Payment Type</option>
+                        <option value="cash">Cash</option>
+                        <option value="transfer">Transfer</option>
+                        <option value="pos">POS</option>
                       </select>
                     </div>
                   
@@ -243,11 +298,12 @@
                 <div class="flex flex-wrap -mx-3">
                   <div class="w-full max-w-full px-3 shrink-0 md:w-full md:flex-0">
                     <div class="mb-4">
-                        <button type="button" class="inline-block px-8 py-2 mb-4 ml-auto font-bold leading-normal text-center text-white align-middle transition-all ease-in bg-blue-500 border-0 rounded-lg shadow-md cursor-pointer text-xs tracking-tight-rem hover:shadow-xs hover:-translate-y-px active:opacity-85">Add</button>
+                        <button type="submit" name="add_sale" class="inline-block px-8 py-2 mb-4 ml-auto font-bold leading-normal text-center text-white align-middle transition-all ease-in bg-blue-500 border-0 rounded-lg shadow-md cursor-pointer text-xs tracking-tight-rem hover:shadow-xs hover:-translate-y-px active:opacity-85">Add Sale</button>
                     </div>
                   </div>
                 </div>
             </div>
+              </form>
           </div>
           </div>
         </div>
@@ -258,33 +314,109 @@
               <div class="flex-auto p-6 pt-0">
                 <br>
                 <table class="items-center w-full mb-0 align-top border-collapse dark:border-white/40 text-slate-500">
-                    Manage Records
+                    Manage Records <br>
                     <thead class="align-bottom">
                       <tr>
+                        <small style="color: blue">
+                          POS:  <?php
+                            // Query to get the total POS payment_types
+                            $querys = "SELECT SUM(price) AS total_pos 
+                                      FROM sales 
+                                      WHERE payment_type = 'POS'";
+
+                            $result = mysqli_query($dbcon, $querys);
+
+                            if (!$result) {
+                                // Handle query error
+                                echo "Error: " . mysqli_error($dbcon);
+                            } else {
+                                $row = mysqli_fetch_assoc($result);
+                                // If no POS payment_types, set to 0
+                                $total_pos = $row['total_pos'] ?? 0;
+                                // Display formatted with Naira symbol
+                                echo "&#8358;" . number_format($total_pos, 2);
+                            }
+                            ?>
+                    
+                  
+                          - Transfer:  <?php
+                            // Query to get the total POS payment_types
+                            $querys = "SELECT SUM(price) AS total_pos 
+                                      FROM sales 
+                                      WHERE payment_type = 'Transfer'";
+
+                            $result = mysqli_query($dbcon, $querys);
+
+                            if (!$result) {
+                                // Handle query error
+                                echo "Error: " . mysqli_error($dbcon);
+                            } else {
+                                $row = mysqli_fetch_assoc($result);
+                                // If no POS payment_types, set to 0
+                                $total_pos = $row['total_pos'] ?? 0;
+                                // Display formatted with Naira symbol
+                                echo "&#8358;" . number_format($total_pos, 2);
+                            }
+                            ?>
+                    
+                  
+                          - Cash:  <?php
+                            // Query to get the total POS payment_types
+                            $querys = "SELECT SUM(price) AS total_pos 
+                                      FROM sales 
+                                      WHERE payment_type = 'cash'";
+
+                            $result = mysqli_query($dbcon, $querys);
+
+                            if (!$result) {
+                                // Handle query error
+                                echo "Error: " . mysqli_error($dbcon);
+                            } else {
+                                $row = mysqli_fetch_assoc($result);
+                                // If no POS payment_types, set to 0
+                                $total_pos = $row['total_pos'] ?? 0;
+                                // Display formatted with Naira symbol
+                                echo "&#8358;" . number_format($total_pos, 2);
+                            }
+                            ?>
+                      </small>
+                      </tr>
+                      <tr>
                         <th class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Product</th>
-                        <th class="px-6 py-3 pl-2 font-bold text-left uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Price</th>
                         <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Quantity</th>
                         <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Cost</th>
+                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Type</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">Paracetamol</p>
-                        </td>
-                        <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">#3000</p>
-                        </td>
-                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <p  class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">12</p>
-                        </td>
-                        <td class="p-2 text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <p  class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">#3600</p>
-                        </td>
-                        
-                      </tr>
-                     
-                      
+                      <?php
+                        $sales_query = "SELECT product, price, quantity, payment_type FROM sales ORDER BY id DESC";
+                        $sales_result = mysqli_query($dbcon, $sales_query);
+                        if ($sales_result && mysqli_num_rows($sales_result) > 0) {
+                          while ($row = mysqli_fetch_assoc($sales_result)) {
+                            $product = htmlspecialchars($row['product']);
+                            $price = floatval($row['price']);
+                            $quantity = intval($row['quantity']);
+                            $payment_type = htmlspecialchars($row['payment_type']);
+                            echo '<tr>
+                              <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">'.$product.'</p>
+                              </td>
+                              <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">'.$quantity.'</p>
+                              </td>
+                              <td class="p-2 text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">&#8358;'.number_format($price,2).'</p>
+                              </td><td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                <p class="text-center mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">'.ucwords($payment_type).'</p>
+                              </td>
+                              
+                            </tr>';
+                          }
+                        } else {
+                          echo '<tr><td colspan="4" class="text-center text-xs text-slate-400">No sales records found.</td></tr>';
+                        }
+                      ?>
                     </tbody>
                   </table>
               </div>
@@ -303,4 +435,43 @@
   <script src="../assets/js/plugins/perfect-scrollbar.min.js" async></script>
   <!-- main script file  -->
   <script src="../assets/js/argon-dashboard-tailwind.js?v=1.0.1" async></script>
+
+<!-- making form not to be submitted -->
+  <!-- <script>
+  document.querySelector("form").addEventListener("submit", function (e) {
+    const displayPrice = document.getElementById("price").value;
+    document.getElementById("price_numeric").value = displayPrice;
+
+    // allow slight delay to apply value before form is submitted
+    setTimeout(() => {
+      e.target.submit();
+    }, 0);
+
+    // stop immediate submission
+    e.preventDefault();
+  });
+</script> -->
+
+  <script>
+function fetchProductInfo() {
+  let product = document.getElementById('product').value;
+  let quantity = document.getElementById('quantity').value;
+  
+  if (!product) {
+    document.getElementById('availability').innerHTML = '';
+    document.getElementById('price').value = '';
+    return;
+  }
+  fetch('product_lookup.php?product=' + encodeURIComponent(product) + '&quantity=' + encodeURIComponent(quantity))
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('availability').innerHTML = data.available;
+      document.getElementById('price').value = data.price; // display value
+      document.getElementById('price_numeric').value = data.price_raw; // numeric value
+    });
+}
+document.getElementById('product').addEventListener('input', fetchProductInfo);
+document.getElementById('quantity').addEventListener('input', fetchProductInfo);
+window.addEventListener('DOMContentLoaded', fetchProductInfo);
+</script>
 </html>

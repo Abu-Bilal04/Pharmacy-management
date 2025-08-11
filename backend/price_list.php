@@ -151,7 +151,7 @@ if ($row = $result->fetch_assoc()) {
           </li>
 
           <li class="mt-0.5 w-full">
-            <a class=" dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="login.php">
+            <a class=" dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="logout.php">
               <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5">
                 <i class="relative top-0 text-sm leading-normal text-orange-500 ni ni-user-run"></i>
               </div>
@@ -222,84 +222,25 @@ if ($row = $result->fetch_assoc()) {
           <div class="flex-none w-full max-w-full px-3">
             <div class="relative flex flex-col min-w-0 mb-6 break-words bg-white border-0 border-transparent border-solid shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
               <div class="p-6 pb-0 mb-0 border-b-0 border-b-solid rounded-t-2xl border-b-transparent">
-                <!-- <h6 class="dark:text-white">Price List</h6> -->
+                <h6 class="dark:text-white">Product Price Checker</h6>
               </div>
               <div class="flex-auto px-0 pt-0 pb-2">
-                <div class="p-0 overflow-x-auto">
-                  <table class="items-center w-full mb-0 align-top border-collapse dark:border-white/40 text-slate-500">
-                    <thead class="align-bottom">
-                      <tr>
-                        <th class="text-center px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Medicine</th>
-                        <th class="px-6 py-3 pl-2 font-bold text-left uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Price</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                        <div class="">
-                           <?php
-                        $psql = mysqli_query($dbcon,"SELECT * FROM purchases ORDER BY id DESC");
-                        while($prop = mysqli_fetch_array($psql)){ ?>
-                      <tr>
-                        <td class="p-2 text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <span class="text-xs font-semibold leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo $prop['product']; ?></span>
-                        </td>
-                        <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <a href="javascript:;" class="text-xs font-semibold leading-tight dark:text-white dark:opacity-80 text-slate-400"> 
-                            <?php
-                              $ten = 10;
-                              $price = $prop['price'];
-                              $quantity = $prop['quantity'];
-                              $left_hand_division = $price / $quantity;
-                              $right_hand_division = $left_hand_division / $ten;
-                              $total = $left_hand_division + $right_hand_division;
-                              echo "&#8358; " . $total; 
-                            ?>
-                          </a>
-                        </td>
-                      </tr>
-                      <?php } ?>
-                        </div>                      
-                    </tbody>
-                  </table>
+                <div class="p-4">
+                  <form id="productForm" class="mb-4">
+                    <input type="text" id="productName" name="product" placeholder="Enter product name" class="border p-2 rounded" required>
+                    <input type="number" id="quantity" name="quantity" value="1" min="1" class="border p-2 rounded w-20" required>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Check</button>
+                  </form>
+                  <div id="result"></div>
                 </div>
               </div>
             </div>
           </div>
         </div> 
     </div>
-        <!-- <footer class="pt-4">
-          <div class="w-full px-6 mx-auto">
-            <div class="flex flex-wrap items-center -mx-3 lg:justify-between">
-              <div class="w-full max-w-full px-3 mt-0 mb-6 shrink-0 lg:mb-0 lg:w-1/2 lg:flex-none">
-                <div class="leading-normal text-center text-sm text-slate-500 lg:text-left">
-                  ©
-                  <script>
-                    document.write(new Date().getFullYear() + ",");
-                  </script>
-                  made with <i class="fa fa-heart"></i> by
-                  <a href="https://www.creative-tim.com" class="font-semibold dark:text-white text-slate-700" >Creative Tim</a>
-                  for a better web.
-                </div>
-              </div>
-              <div class="w-full max-w-full px-3 mt-0 shrink-0 lg:w-1/2 lg:flex-none">
-                <ul class="flex flex-wrap justify-center pl-0 mb-0 list-none lg:justify-end">
-                  <li class="nav-item">
-                    <a href="https://www.creative-tim.com" class="block px-4 pt-0 pb-1 font-normal transition-colors ease-in-out text-sm text-slate-500" >Creative Tim</a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="https://www.creative-tim.com/presentation" class="block px-4 pt-0 pb-1 font-normal transition-colors ease-in-out text-sm text-slate-500" >About Us</a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="https://creative-tim.com/blog" class="block px-4 pt-0 pb-1 font-normal transition-colors ease-in-out text-sm text-slate-500" >Blog</a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="https://www.creative-tim.com/license" class="block px-4 pt-0 pb-1 pr-0 font-normal transition-colors ease-in-out text-sm text-slate-500" >License</a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </footer> -->
-      </div>
+
+    <?php include '../include/footer.php'; ?>
+    </div>
       <!-- end cards -->
     </main>
  
@@ -310,4 +251,17 @@ if ($row = $result->fetch_assoc()) {
   <script src="../assets/js/plugins/perfect-scrollbar.min.js" async></script>
   <!-- main script file  -->
   <script src="../assets/js/argon-dashboard-tailwind.js?v=1.0.1" async></script>
+  <script>
+document.getElementById('productForm').onsubmit = function(e) {
+  e.preventDefault();
+  let product = document.getElementById('productName').value;
+  let quantity = document.getElementById('quantity').value;
+  fetch('price_lookup.php?product=' + encodeURIComponent(product) + '&quantity=' + encodeURIComponent(quantity))
+    .then(res => res.text())
+    .then(html => document.getElementById('result').innerHTML = html);
+};
+document.getElementById('quantity').oninput = function() {
+  document.getElementById('productForm').dispatchEvent(new Event('submit'));
+};
+</script>
 </html>

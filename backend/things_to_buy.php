@@ -83,14 +83,15 @@ if ($row = $result->fetch_assoc()) {
             </a>
           </li>
 
-          <li class="mt-0.5 w-full">
+          <!-- <li class="mt-0.5 w-full">
             <a class="py-2.7 dark:text-white dark:opacity-80 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 text-slate-700 transition-colors" href="price_list.php">
               <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5">
                 <i class="relative top-0 text-sm leading-normal text-blue-500 ni ni-tag"></i>
               </div>
               <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">Price list</span>
             </a>
-          </li>
+          </li> -->
+
 
            <li class="mt-0.5 w-full">
             <a class="py-2.7 dark:text-white dark:opacity-80 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 text-slate-700 transition-colors" href="purchases.php">
@@ -151,7 +152,7 @@ if ($row = $result->fetch_assoc()) {
           </li>
 
           <li class="mt-0.5 w-full">
-            <a class=" dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="login.php">
+            <a class=" dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="logout.php">
               <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5">
                 <i class="relative top-0 text-sm leading-normal text-orange-500 ni ni-user-run"></i>
               </div>
@@ -234,21 +235,33 @@ if ($row = $result->fetch_assoc()) {
                       </tr>
                     </thead>
                     <tbody>
-                        <div class="">
-                          <?php
-                        $sn=1;
-                        $psql = mysqli_query($dbcon,"SELECT * FROM purchases ORDER BY id DESC");
-                        while($prop = mysqli_fetch_array($psql)){ ?>
-                      <tr>
-                        <td class="p-2 text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <span class="text-xs font-semibold leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo $sn++; ?></span>
-                        </td>
-                        <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <span class="text-xs font-semibold leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo $prop['product']; ?></span>
-                        </td>
-                      </tr>
+                      <?php
+                        $sn = 1;
+                        // Get all products with their total purchased and sold quantities
+                        $query = "
+                          SELECT 
+                            p.product,
+                            SUM(p.package * p.quantity) AS total_purchased,
+                            IFNULL(SUM(s.quantity), 0) AS total_sold,
+                            (SUM(p.package * p.quantity) - IFNULL(SUM(s.quantity), 0)) AS stock_left
+                          FROM purchases p
+                          LEFT JOIN sales s ON s.product = p.product
+                          GROUP BY p.product
+                          HAVING stock_left < 10
+                          ORDER BY stock_left ASC
+                        ";
+                        $result = mysqli_query($dbcon, $query);
+                        while ($row = mysqli_fetch_assoc($result)) {
+                      ?>
+                        <tr>
+                          <td class="p-2 text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                            <span class="text-xs font-semibold leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo $sn++; ?></span>
+                          </td>
+                          <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                            <span class="text-xs font-semibold leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo htmlspecialchars($row['product']); ?></span>
+                          </td>
+                        </tr>
                       <?php } ?>
-                        </div>                      
                     </tbody>
                   </table>
                 </div>

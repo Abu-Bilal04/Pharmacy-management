@@ -50,6 +50,46 @@ if ($row = $result->fetch_assoc()) {
     <!-- Main Styling -->
     <link href="../assets/css/argon-dashboard-tailwind.css?v=1.0.1" rel="stylesheet" />
   </head>
+  <style>
+.carousel-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Maintain aspect ratio */
+    object-position: center;
+}
+
+.carousel-slide.active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.carousel-slide.prev {
+    transform: translateX(-100%);
+}
+
+.carousel-container {
+    height: 400px; /* Fixed height */
+    min-height: 400px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+.no-records-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+}
+
+.no-records-found img {
+    width: 150px;
+    height: 150px;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+  </style>
 
   <body class="m-0 font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-gray-50 text-slate-500">
 
@@ -103,14 +143,15 @@ if (isset($_GET['msg']) && $_GET['msg'] === "success") {
             </a>
           </li>
 
-          <li class="mt-0.5 w-full">
+          <!-- <li class="mt-0.5 w-full">
             <a class="py-2.7 dark:text-white dark:opacity-80 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 text-slate-700 transition-colors" href="price_list.php">
               <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5">
                 <i class="relative top-0 text-sm leading-normal text-blue-500 ni ni-tag"></i>
               </div>
               <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">Price list</span>
             </a>
-          </li>
+          </li> -->
+
 
            <li class="mt-0.5 w-full">
             <a class="py-2.7 dark:text-white dark:opacity-80 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 text-slate-700 transition-colors" href="purchases.php">
@@ -171,7 +212,7 @@ if (isset($_GET['msg']) && $_GET['msg'] === "success") {
           </li>
 
           <li class="mt-0.5 w-full">
-            <a class=" dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="login.php">
+            <a class=" dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="logout.php">
               <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5">
                 <i class="relative top-0 text-sm leading-normal text-orange-500 ni ni-user-run"></i>
               </div>
@@ -245,17 +286,53 @@ if (isset($_GET['msg']) && $_GET['msg'] === "success") {
               <div class="flex-auto p-4">
                 <div class="flex flex-row -mx-3">
                   <div class="flex-none w-2/3 max-w-full px-3">
-                    <div>
-                      <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">Today's Sales</p>
-                      <h5 class="mb-2 font-bold dark:text-white">
-                        <?php echo "&#8358;" . number_format('287877222'); ?>
-                      </h5>
-                      <p class="mb-0 dark:text-white dark:opacity-60">
-                        <span class="text-sm font-bold leading-normal text-emerald-500">+55%</span>
-                        profit
-                      </p>
-                    </div>
+                  <div>
+                    <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">Today's Sales</p>
+                    <h5 class="mb-2 font-bold dark:text-white">
+                      <?php
+                        // Get today's date
+                        $today = date('Y-m-d');
+                        $yesterday = date('Y-m-d', strtotime('-1 day'));
+
+                        // Get today's total sales
+                        $today_sales_query = "SELECT SUM(price * quantity) AS total_sales 
+                                              FROM sales 
+                                              WHERE DATE(timestamp) = '$today'";
+                        $today_sales_result = mysqli_query($dbcon, $today_sales_query);
+                        $today_sales_row = mysqli_fetch_assoc($today_sales_result);
+                        $today_total_sales = $today_sales_row['total_sales'] / 100 ?? 0;
+
+                        // Get yesterday's total sales
+                        $yesterday_sales_query = "SELECT SUM(price * quantity) AS total_sales 
+                                                  FROM sales 
+                                                  WHERE DATE(timestamp) = '$yesterday'";
+                        $yesterday_sales_result = mysqli_query($dbcon, $yesterday_sales_query);
+                        $yesterday_sales_row = mysqli_fetch_assoc($yesterday_sales_result);
+                        $yesterday_total_sales = $yesterday_sales_row['total_sales'] ?? 0;
+
+                        // Format today's sales with Naira symbol
+                        echo "&#8358;" . number_format($today_total_sales, 2);
+                      ?>
+                    </h5>
+                    <p class="mb-0 dark:text-white dark:opacity-60">
+                      <?php
+                        // Calculate percentage change
+                        if ($yesterday_total_sales > 0) {
+                            $percentage_change = (($today_total_sales - $yesterday_total_sales) / $yesterday_total_sales) * 100;
+                        } else {
+                            $percentage_change = 0;
+                        }
+
+                        // Choose color based on increase or decrease
+                        $color_class = $percentage_change >= 0 ? 'text-emerald-500' : 'text-red-500';
+                        $sign = $percentage_change >= 0 ? '+' : '';
+
+                        echo "<span class='text-sm font-bold leading-normal $color_class'>{$sign}" . number_format($percentage_change, 2) . "%</span> profit";
+                      ?>
+                    </p>
                   </div>
+                </div>
+
                   <div class="px-3 text-right basis-1/3">
                     <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-blue-500 to-violet-500">
                       <i class="ni leading-none ni-money-coins text-lg relative top-3.5 text-white"></i>
@@ -273,10 +350,35 @@ if (isset($_GET['msg']) && $_GET['msg'] === "success") {
                 <div class="flex flex-row -mx-3">
                   <div class="flex-none w-2/3 max-w-full px-3">
                     <div>
-                      <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">Today's Net worth</p>
-                      <h5 class="mb-2 font-bold dark:text-white">
-                        <?php echo "&#8358;" . number_format('287877222'); ?>
-                      </h5>
+                      <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">Today's Profit</p>
+                    <h5 class="mb-2 font-bold dark:text-white">
+                      <?php
+                        // Get today's sales
+                        $today = date('Y-m-d');
+                        $sales_query = "SELECT product, price, quantity FROM sales WHERE DATE(timestamp) = '$today'";
+                        $sales_result = mysqli_query($dbcon, $sales_query);
+                        $total_profit = 0;
+
+                        if ($sales_result && mysqli_num_rows($sales_result) > 0) {
+                          while ($row = mysqli_fetch_assoc($sales_result)) {
+                            $price = floatval($row['price']);
+                            $quantity = intval($row['quantity']);
+                            
+                            // Calculate profit for each sale using the formula
+                            $ten = 1100;
+                            $pack_qty = 1;
+                            $left_hand_division = $price / $pack_qty;
+                            $right_hand_division = $left_hand_division / $ten;
+                            $unit_profit = $right_hand_division; // The profit is the right hand division
+                            $sale_profit = $unit_profit * $quantity;
+                            
+                            $total_profit += $sale_profit;
+                          }
+                        }
+
+                        echo "&#8358;" . number_format($total_profit, 2);
+                      ?>
+                    </h5>
                     </div>
                   </div>
                   <div class="px-3 text-right basis-1/3">
@@ -298,7 +400,31 @@ if (isset($_GET['msg']) && $_GET['msg'] === "success") {
                     <div>
                       <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">Balance</p>
                       <h5 class="mb-2 font-bold dark:text-white">
-                        <?php echo "&#8358;" . number_format('287877222'); ?>
+                        <?php
+                        
+                          // Total sales (price * quantity)
+                          $sales_query = "SELECT SUM(price) AS total_sales FROM sales";
+                          $sales_result = mysqli_query($dbcon, $sales_query);
+                          $sales_row = mysqli_fetch_assoc($sales_result);
+                          $total_sales = $sales_row['total_sales'] ?? 0;
+
+                          // Total purchases (price)
+                          $purchases_query = "SELECT SUM(price) AS total_purchases FROM purchases";
+                          $purchases_result = mysqli_query($dbcon, $purchases_query);
+                          $purchases_row = mysqli_fetch_assoc($purchases_result);
+                          $total_purchases = $purchases_row['total_purchases'] ?? 0;
+
+                          // Total expenses (price)
+                          $expenses_query = "SELECT SUM(price) AS total_expenses FROM expenses";
+                          $expenses_result = mysqli_query($dbcon, $expenses_query);
+                          $expenses_row = mysqli_fetch_assoc($expenses_result);
+                          $total_expenses = $expenses_row['total_expenses'] ?? 0;
+
+                          // Calculate balance
+                          $balance = $total_sales - $total_purchases - $total_expenses;
+
+                          echo "&#8358;" . number_format($balance);
+                          ?>
                       </h5>
                     </div>
                   </div>
@@ -354,119 +480,56 @@ if (isset($_GET['msg']) && $_GET['msg'] === "success") {
               <div class="overflow-x-auto">
                 <table class="items-center w-full mb-4 align-top border-collapse border-gray-200 dark:border-white/40">
                   <tbody>
-                    <tr>
-                      <td class="p-2 align-middle bg-transparent border-b w-3/10 whitespace-nowrap dark:border-white/40">
-                        <div class="flex items-center px-2 py-1">
-                          <div class="ml-6">
-                            <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Product:</p>
-                            <h6 class="mb-0 text-sm leading-normal dark:text-white">Paracetamol</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Price:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">500</h6>
-                        </div>
-                      </td>
-                      <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Quantity:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">6</h6>
-                        </div>
-                      </td>
-                      <td class="p-2 text-sm leading-normal align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="flex-1 text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Total:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">3000</h6>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="p-2 align-middle bg-transparent border-b w-3/10 whitespace-nowrap dark:border-white/40">
-                        <div class="flex items-center px-2 py-1">
-                          <div class="ml-6">
-                            <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Product:</p>
-                            <h6 class="mb-0 text-sm leading-normal dark:text-white">Vitamin C</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Price:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">10</h6>
-                        </div>
-                      </td>
-                      <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Quantity:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">47</h6>
-                        </div>
-                      </td>
-                      <td class="p-2 text-sm leading-normal align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="flex-1 text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Total:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">470</h6>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="p-2 align-middle bg-transparent border-b w-3/10 whitespace-nowrap dark:border-white/40">
-                        <div class="flex items-center px-2 py-1">
-                          <div class="ml-6">
-                            <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Product:</p>
-                            <h6 class="mb-0 text-sm leading-normal dark:text-white">Arthemeter</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Price:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">500</h6>
-                        </div>
-                      </td>
-                      <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Quantity:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">1</h6>
-                        </div>
-                      </td>
-                      <td class="p-2 text-sm leading-normal align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="flex-1 text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Total:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">500</h6>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="p-2 align-middle bg-transparent border-b w-3/10 whitespace-nowrap dark:border-white/40">
-                        <div class="flex items-center px-2 py-1">
-                          <div class="ml-6">
-                            <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Product:</p>
-                            <h6 class="mb-0 text-sm leading-normal dark:text-white">Tramol</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Price:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">1230</h6>
-                        </div>
-                      </td>
-                      <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Quantity:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">2</h6>
-                        </div>
-                      </td>
-                      <td class="p-2 text-sm leading-normal align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="flex-1 text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Total:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">2460</h6>
-                        </div>
-                      </td>
-                    </tr>
-                    
+                    <?php
+                        $sales_query = "SELECT product, price, quantity FROM sales ORDER BY id DESC LIMIT 4";
+                        $sales_result = mysqli_query($dbcon, $sales_query);
+                        if ($sales_result && mysqli_num_rows($sales_result) > 0) {
+                          while ($row = mysqli_fetch_assoc($sales_result)) {
+                            $product = htmlspecialchars($row['product']);
+                            $price = floatval($row['price'] / 100);
+                            $quantity = intval($row['quantity']);
+                            $cost = $price;
+                            echo '<tr>
+                              <td class="p-2 align-middle bg-transparent border-b w-3/10 whitespace-nowrap dark:border-white/40">
+                                <div class="flex items-center px-2 py-1">
+                                  <div class="ml-6">
+                                    <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Product:</p>
+                                    <h6 class="mb-0 text-sm leading-normal dark:text-white">'.$product.'</h6>
+                                  </div>
+                                </div>
+                              </td>
+                              <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
+                                <div class="text-center">
+                                  <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Price:</p>
+                                  <h6 class="mb-0 text-sm leading-normal dark:text-white">'.$price.'</h6>
+                                </div>
+                              </td>
+                              <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
+                                <div class="text-center">
+                                  <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Quantity:</p>
+                                  <h6 class="mb-0 text-sm leading-normal dark:text-white">'.$quantity.'</h6>
+                                </div>
+                              </td>
+                              <td class="p-2 text-sm leading-normal align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
+                                <div class="flex-1 text-center">
+                                  <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Total:</p>
+                                  <h6 class="mb-0 text-sm leading-normal dark:text-white">'.$price * $quantity.'</h6>
+                                </div>
+                              </td>
+                              
+                          </tr>';
+                          }
+                        } else {
+                          echo '<tr>
+                                  <td colspan="4" class="p-4">
+                                    <div class="no-records-found">
+                                      <img src="../assets/img/no-data.png" alt="No records found">
+                                      <span class="text-sm text-slate-400">No sales records found</span>
+                                    </div>
+                                  </td>
+                                </tr>';
+                        }
+                      ?>
                   </tbody>
                 </table>
               </div>
@@ -474,40 +537,41 @@ if (isset($_GET['msg']) && $_GET['msg'] === "success") {
           </div>
 
           <div class="w-full max-w-full px-3 lg:w-5/12 lg:flex-none">
-            <div slider class="relative w-full h-full overflow-hidden rounded-2xl">
+           <div slider class="carousel-container rounded-2xl">
+
               <!-- slide 1 -->
-              <div slide class="absolute w-full h-full transition-all duration-500">
+              <div class="carousel-slide absolute w-full h-full transition-all duration-500">
                 <img class="object-cover h-full" src="../assets/img/carousel-1.jpg" alt="carousel image" />
                 <div class="block text-start ml-12 left-0 bottom-0 absolute right-[15%] pt-5 pb-5 text-white">
                   <div class="inline-block w-8 h-8 mb-4 text-center text-black bg-white bg-center rounded-lg fill-current stroke-none">
                     <i class="top-0.75 text-xxs relative text-slate-700 ni ni-camera-compact"></i>
                   </div>
-                  <h5 class="mb-1 text-white">Stay Connected With MI PIXEL</h5>
-                  <p class="dark:opacity-80">There’s nothing I really wanted to do in life that I wasn’t able to get good at.</p>
+                  <h5 class="mb-1 text-white">Your Health, Our Priority</h5>
+                  <p class="dark:opacity-80">Providing quality medicines and trusted health advice since day one.</p>
                 </div>
               </div>
 
               <!-- slide 2 -->
-              <div slide class="absolute w-full h-full transition-all duration-500">
+              <div class="carousel-slide absolute w-full h-full transition-all duration-500">
                 <img class="object-cover h-full" src="../assets/img/carousel-2.jpg" alt="carousel image" />
                 <div class="block text-start ml-12 left-0 bottom-0 absolute right-[15%] pt-5 pb-5 text-white">
                   <div class="inline-block w-8 h-8 mb-4 text-center text-black bg-white bg-center rounded-lg fill-current stroke-none">
                     <i class="top-0.75 text-xxs relative text-slate-700 ni ni-bulb-61"></i>
                   </div>
-                  <h5 class="mb-1 text-white">Faster way to create web pages</h5>
-                  <p class="dark:opacity-80">That’s my skill. I’m not really specifically talented at anything except for the ability to learn.</p>
+                  <h5 class="mb-1 text-white">Fast & Reliable Service</h5>
+                  <p class="dark:opacity-80">From prescriptions to over-the-counter essentials — we’ve got you covered.</p>
                 </div>
               </div>
 
               <!-- slide 3 -->
-              <div slide class="absolute w-full h-full transition-all duration-500">
+              <div class="carousel-slide absolute w-full h-full transition-all duration-500">
                 <img class="object-cover h-full" src="../assets/img/carousel-3.jpg" alt="carousel image" />
                 <div class="block text-start ml-12 left-0 bottom-0 absolute right-[15%] pt-5 pb-5 text-white">
                   <div class="inline-block w-8 h-8 mb-4 text-center text-black bg-white bg-center rounded-lg fill-current stroke-none">
                     <i class="top-0.75 text-xxs relative text-slate-700 ni ni-trophy"></i>
                   </div>
-                  <h5 class="mb-1 text-white">Share with us your design tips!</h5>
-                  <p class="dark:opacity-80">Don’t be afraid to be wrong because you can’t learn anything from a compliment.</p>
+                  <h5 class="mb-1 text-white">Expert Health Guidance</h5>
+                  <p class="dark:opacity-80">Our pharmacists are here to answer your questions and care for your well-being.</p>
                 </div>
               </div>
 
@@ -525,125 +589,55 @@ if (isset($_GET['msg']) && $_GET['msg'] === "success") {
             <div class="relative flex flex-col min-w-0 break-words bg-white border-0 border-solid shadow-xl dark:bg-slate-850 dark:shadow-dark-xl dark:bg-gray-950 border-black-125 rounded-2xl bg-clip-border">
               <div class="p-4 pb-0 mb-0 rounded-t-4">
                 <div class="flex justify-between">
-                  <h6 class="mb-2 dark:text-white">Sales by Customers</h6>
+                  <h6 class="mb-2 dark:text-white">Recent Expenses</h6>
                 </div>
               </div>
               <div class="overflow-x-auto">
                 <table class="items-center w-full mb-4 align-top border-collapse border-gray-200 dark:border-white/40">
                   <tbody>
-                    <tr>
-                      <td class="p-2 align-middle bg-transparent border-b w-3/10 whitespace-nowrap dark:border-white/40">
-                        <div class="flex items-center px-2 py-1">
-                          <div class="ml-6">
-                            <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Product:</p>
-                            <h6 class="mb-0 text-sm leading-normal dark:text-white">Paracetamol</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Price:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">500</h6>
-                        </div>
-                      </td>
-                      <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Quantity:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">6</h6>
-                        </div>
-                      </td>
-                      <td class="p-2 text-sm leading-normal align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="flex-1 text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Total:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">3000</h6>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="p-2 align-middle bg-transparent border-b w-3/10 whitespace-nowrap dark:border-white/40">
-                        <div class="flex items-center px-2 py-1">
-                          <div class="ml-6">
-                            <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Product:</p>
-                            <h6 class="mb-0 text-sm leading-normal dark:text-white">Vitamin C</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Price:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">10</h6>
-                        </div>
-                      </td>
-                      <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Quantity:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">47</h6>
-                        </div>
-                      </td>
-                      <td class="p-2 text-sm leading-normal align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="flex-1 text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Total:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">470</h6>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="p-2 align-middle bg-transparent border-b w-3/10 whitespace-nowrap dark:border-white/40">
-                        <div class="flex items-center px-2 py-1">
-                          <div class="ml-6">
-                            <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Product:</p>
-                            <h6 class="mb-0 text-sm leading-normal dark:text-white">Arthemeter</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Price:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">500</h6>
-                        </div>
-                      </td>
-                      <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Quantity:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">1</h6>
-                        </div>
-                      </td>
-                      <td class="p-2 text-sm leading-normal align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="flex-1 text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Total:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">500</h6>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="p-2 align-middle bg-transparent border-b w-3/10 whitespace-nowrap dark:border-white/40">
-                        <div class="flex items-center px-2 py-1">
-                          <div class="ml-6">
-                            <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Product:</p>
-                            <h6 class="mb-0 text-sm leading-normal dark:text-white">Tramol</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Price:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">1230</h6>
-                        </div>
-                      </td>
-                      <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Quantity:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">2</h6>
-                        </div>
-                      </td>
-                      <td class="p-2 text-sm leading-normal align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
-                        <div class="flex-1 text-center">
-                          <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Total:</p>
-                          <h6 class="mb-0 text-sm leading-normal dark:text-white">2460</h6>
-                        </div>
-                      </td>
-                    </tr>
-                    
+                    <?php
+                        $expenses_query = "SELECT item, price, transaction FROM expenses ORDER BY id DESC LIMIT 3";
+                        $expenses_result = mysqli_query($dbcon, $expenses_query);
+                        if ($expenses_result && mysqli_num_rows($expenses_result) > 0) {
+                          while ($row = mysqli_fetch_assoc($expenses_result)) {
+                            $item = htmlspecialchars($row['item']);
+                            $price = floatval($row['price']);
+                            $transaction = htmlspecialchars($row['transaction']);
+                            echo '
+                            </tr>
+                              <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
+                                <div class="text-center">
+                                  <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Item:</p>
+                                  <h6 class="mb-0 text-sm leading-normal dark:text-white">'. $item .'</h6>
+                                </div>
+                              </td>
+
+                              <td class="p-2 text-sm leading-normal align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
+                                <div class="flex-1 text-center">
+                                  <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Price:</p>
+                                  <h6 class="mb-0 text-sm leading-normal dark:text-white">'. $price .'</h6>
+                                </div>
+                              </td>
+                              
+                              <td class="p-2 text-sm leading-normal align-middle bg-transparent border-b whitespace-nowrap dark:border-white/40">
+                                <div class="flex-1 text-center">
+                                  <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-60">Transaction:</p>
+                                  <h6 class="mb-0 text-sm leading-normal dark:text-white">'. $transaction .'</h6>
+                                </div>
+                              </td>
+                            </tr>';
+                          }
+                        } else {
+                           echo '<tr>
+                                  <td colspan="4" class="p-4">
+                                    <div class="no-records-found">
+                                      <img src="../assets/img/no-data.png" alt="No records found">
+                                      <span class="text-sm text-slate-400">No sales records found</span>
+                                    </div>
+                                  </td>
+                                </tr>';
+                        }
+                      ?>
                   </tbody>
                 </table>
               </div>
@@ -656,34 +650,31 @@ if (isset($_GET['msg']) && $_GET['msg'] === "success") {
               </div>
               <div class="flex-auto p-4">
                 <ul class="flex flex-col pl-0 mb-0 rounded-lg">
-                  <li class="relative flex justify-between py-2 pr-4 mb-2 border-0 rounded-t-lg rounded-xl text-inherit">
-                    <div class="flex items-center">
-                      <div class="inline-block w-8 h-8 mr-4 text-center text-black bg-center shadow-sm fill-current stroke-none bg-gradient-to-tl from-zinc-800 to-zinc-700 dark:bg-gradient-to-tl dark:from-slate-750 dark:to-gray-850 rounded-xl">
-                        <i class="text-white ni ni-mobile-button relative top-0.75 text-xxs"></i>
-                      </div>
-                      <div class="flex flex-col">
-                        <h6 class="mb-1 text-sm leading-normal text-slate-700 dark:text-white">Aminah Pharmacy</h6>
-                        <span class="text-xs leading-tight dark:text-white/80">No 32 Gwargwaji Zaria</span>
-                      </div>
-                    </div>
-                    <div class="flex">
-                      <button class="group ease-in leading-pro text-xs rounded-3.5xl p-1.2 h-6.5 w-6.5 mx-0 my-auto inline-block cursor-pointer border-0 bg-transparent text-center align-middle font-bold text-slate-700 shadow-none transition-all dark:text-white"><i class="ni ease-bounce text-2xs group-hover:translate-x-1.25 ni-bold-right transition-all duration-200" aria-hidden="true"></i></button>
-                    </div>
-                  </li>
-                  <li class="relative flex justify-between py-2 pr-4 mb-2 border-0 rounded-xl text-inherit">
-                    <div class="flex items-center">
-                      <div class="inline-block w-8 h-8 mr-4 text-center text-black bg-center shadow-sm fill-current stroke-none bg-gradient-to-tl from-zinc-800 to-zinc-700 dark:bg-gradient-to-tl dark:from-slate-750 dark:to-gray-850 rounded-xl">
-                        <i class="text-white ni ni-tag relative top-0.75 text-xxs"></i>
-                      </div>
-                      <div class="flex flex-col">
-                        <h6 class="mb-1 text-sm leading-normal text-slate-700 dark:text-white">Ahmad Pharmarceutical</h6>
-                        <span class="text-xs leading-tight dark:text-white/80">Opposite NARICT Basawa Zaria</span></span>
-                      </div>
-                    </div>
-                    <div class="flex">
-                      <button class="group ease-in leading-pro text-xs rounded-3.5xl p-1.2 h-6.5 w-6.5 mx-0 my-auto inline-block cursor-pointer border-0 bg-transparent text-center align-middle font-bold text-slate-700 shadow-none transition-all dark:text-white"><i class="ni ease-bounce text-2xs group-hover:translate-x-1.25 ni-bold-right transition-all duration-200" aria-hidden="true"></i></button>
-                    </div>
-                  </li>
+                  <?php
+                        $distributors_query = "SELECT company, location FROM distributors ORDER BY id DESC LIMIT 3";
+                        $distributors_result = mysqli_query($dbcon, $distributors_query);
+                        if ($distributors_result && mysqli_num_rows($distributors_result) > 0) {
+                          while ($row = mysqli_fetch_assoc($distributors_result)) {
+                            $company = htmlspecialchars($row['company']);
+                            $location = htmlspecialchars($row['location']);
+                            echo '
+                            <li class="relative flex justify-between py-2 pr-4 mb-2 border-0 rounded-t-lg rounded-xl text-inherit">
+                              <div class="flex items-center">
+                                <div class="inline-block w-8 h-8 mr-4 text-center text-black bg-center shadow-sm fill-current stroke-none bg-gradient-to-tl from-zinc-800 to-zinc-700 dark:bg-gradient-to-tl dark:from-slate-750 dark:to-gray-850 rounded-xl">
+                                  <i class="text-white ni ni-mobile-button relative top-0.75 text-xxs"></i>
+                                </div>
+                                <div class="flex flex-col">
+                                  <h6 class="mb-1 text-sm leading-normal text-slate-700 dark:text-white">'. $company .'</h6>
+                                  <span class="text-xs leading-tight dark:text-white/80">'. $location .'</span>
+                                </div>
+                              </div>
+                            </li>';
+                          }
+                        } else {
+                          echo '<tr><td colspan="4" class="text-center text-xs text-slate-400">No Distributors records found.</td></tr>';
+                        }
+                      ?>
+                  
                   
                 </ul>
               </div>
@@ -691,23 +682,8 @@ if (isset($_GET['msg']) && $_GET['msg'] === "success") {
           </div>
         </div>
 
-        <footer class="pt-4">
-          <div class="w-full px-6 mx-auto">
-            <div class="flex flex-wrap items-center -mx-3 lg:justify-between">
-              <div class="w-full max-w-full px-3 mt-0 mb-6 shrink-0 lg:mb-0 lg:w-1/2 lg:flex-none">
-                <div class="text-sm leading-normal text-center text-slate-500 lg:text-left">
-                  ©
-                  <script>
-                    document.write(new Date().getFullYear() + ",");
-                  </script>
-                  made <i class="fa fa-heart"></i> by
-                  <a href="https://www.creative-tim.com" class="font-semibold text-slate-700 dark:text-white" >MI Pixel</a>
-                </div>
-              </div>
-             
-            </div>
-          </div>
-        </footer>
+        <?php include '../include/footer.php'; ?>
+
       </div>
       <!-- end cards -->
     </main>
@@ -719,4 +695,142 @@ if (isset($_GET['msg']) && $_GET['msg'] === "success") {
   <script src="../assets/js/plugins/perfect-scrollbar.min.js" async></script>
   <!-- main script file  -->
   <script src="../assets/js/argon-dashboard-tailwind.js?v=1.0.1" async></script>
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const slides = document.querySelectorAll('.carousel-slide');
+    let current = 0;
+    let intervalId;
+
+    // Show a specific slide
+    function showSlide(idx) {
+        slides.forEach((slide, i) => {
+            if (i === idx) {
+                slide.style.display = 'block';
+                slide.style.opacity = '1';
+            } else {
+                slide.style.display = 'none';
+                slide.style.opacity = '0';
+            }
+        });
+    }
+
+    // Auto advance slides
+    function startAutoSlide() {
+        intervalId = setInterval(() => {
+            current = (current + 1) % slides.length;
+            showSlide(current);
+        }, 5000); // Change slide every 5 seconds
+    }
+
+    // Stop auto advance
+    function stopAutoSlide() {
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
+    }
+
+    // Initialize
+    showSlide(current);
+    startAutoSlide();
+
+    // Next button click
+    document.querySelector('[btn-next]').onclick = function() {
+        stopAutoSlide();
+        current = (current + 1) % slides.length;
+        showSlide(current);
+        startAutoSlide();
+    };
+
+    // Previous button click
+    document.querySelector('[btn-prev]').onclick = function() {
+        stopAutoSlide();
+        current = (current - 1 + slides.length) % slides.length;
+        showSlide(current);
+        startAutoSlide();
+    };
+
+    // Pause on hover
+    const slider = document.querySelector('[slider]');
+    slider.addEventListener('mouseenter', stopAutoSlide);
+    slider.addEventListener('mouseleave', startAutoSlide);
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const slides = document.querySelectorAll('.carousel-slide');
+    let current = 0;
+    let intervalId;
+
+    // Show a specific slide with animation
+    function showSlide(idx, direction = 'next') {
+        const currentSlide = slides[current];
+        const nextSlide = slides[idx];
+        
+        // Reset all slides
+        slides.forEach(slide => {
+            slide.style.display = 'block';
+            slide.classList.remove('active', 'prev');
+            slide.style.transform = direction === 'next' ? 'translateX(100%)' : 'translateX(-100%)';
+            slide.style.opacity = '0';
+        });
+
+        // Animate current slide out
+        currentSlide.style.transform = direction === 'next' ? 'translateX(-100%)' : 'translateX(100%)';
+        currentSlide.style.opacity = '0';
+
+        // Animate new slide in
+        nextSlide.classList.add('active');
+        nextSlide.style.transform = 'translateX(0)';
+        nextSlide.style.opacity = '1';
+
+        current = idx;
+    }
+
+    // Auto advance slides
+    function startAutoSlide() {
+        intervalId = setInterval(() => {
+            const next = (current + 1) % slides.length;
+            showSlide(next, 'next');
+        }, 5000);
+    }
+
+    // Stop auto advance
+    function stopAutoSlide() {
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
+    }
+
+    // Initialize
+    slides.forEach((slide, i) => {
+        if (i !== 0) {
+            slide.style.transform = 'translateX(100%)';
+            slide.style.opacity = '0';
+        }
+    });
+    slides[0].classList.add('active');
+    startAutoSlide();
+
+    // Next button click
+    document.querySelector('[btn-next]').onclick = function() {
+        stopAutoSlide();
+        const next = (current + 1) % slides.length;
+        showSlide(next, 'next');
+        startAutoSlide();
+    };
+
+    // Previous button click
+    document.querySelector('[btn-prev]').onclick = function() {
+        stopAutoSlide();
+        const prev = (current - 1 + slides.length) % slides.length;
+        showSlide(prev, 'prev');
+        startAutoSlide();
+    };
+
+    // Pause on hover
+    const slider = document.querySelector('[slider]');
+    slider.addEventListener('mouseenter', stopAutoSlide);
+    slider.addEventListener('mouseleave', startAutoSlide);
+});
+</script>
 </html>
