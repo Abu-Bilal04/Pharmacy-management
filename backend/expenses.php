@@ -386,23 +386,41 @@ if ($row = $result->fetch_assoc()) {
                     </thead>
                     <tbody>
                        <?php
-                        $psql = mysqli_query($dbcon,"SELECT * FROM expenses ORDER BY id DESC");
-                        // if (empty(mysqli_fetch_array($psql))) {
-                        //   echo "Empty Record!";
-                        // } else {
-                      while($prop = mysqli_fetch_array($psql)){ ?>
-                      <tr>
-                        <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap text-center shadow-transparent">
-                          <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo $prop['item']; ?></p>
-                        </td>
-                        <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent text-center">
-                          <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo "&#8358; " . number_format($prop['price']); ?></p>
-                        </td>
-                        <td class="p-2 text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <p  class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo $prop['transaction']; ?></p>
-                        </td>
-                      </tr>
-                     <?php } ?>
+                          $psql = mysqli_query($dbcon, "SELECT * FROM expenses ORDER BY id DESC");
+
+                          if (mysqli_num_rows($psql) > 0) {
+                              while ($prop = mysqli_fetch_array($psql)) {
+                                  ?>
+                                  <tr>
+                                      <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap text-center shadow-transparent">
+                                          <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo htmlspecialchars($prop['item']); ?></p>
+                                      </td>
+                                      <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent text-center">
+                                          <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">
+                                              &#8358; <?php echo number_format($prop['price']); ?>
+                                          </p>
+                                      </td>
+                                      <td class="p-2 text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                          <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo htmlspecialchars($prop['transaction']); ?></p>
+                                      </td>
+                                  </tr>
+                                  <?php
+                              }
+                          } else {
+                              echo '
+                              <tr>
+                                  <td colspan="4" class="text-center p-4">
+                                      <center>
+                                          <div class="no-records-found">
+                                              <img src="../assets/img/no-data.png" alt="No records found" class="img-fluid" style="max-width:100px;">
+                                              <p class="text-muted small mb-0">No sales records found</p>
+                                          </div>
+                                      </center>
+                                  </td>
+                              </tr>';
+                          }
+                          ?>
+
                       
                     </tbody>
                   </table>

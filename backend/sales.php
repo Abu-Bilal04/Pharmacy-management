@@ -414,7 +414,18 @@ if ($row = $result->fetch_assoc()) {
                             </tr>';
                           }
                         } else {
-                          echo '<tr><td colspan="4" class="text-center text-xs text-slate-400">No sales records found.</td></tr>';
+                          echo '
+                            <tr>
+                                <td colspan="6" class="text-center p-4">
+                                    <center>
+                                        <div class="no-records-found">
+                                            <img src="../assets/img/no-data.png" alt="No records found" class="img-fluid" style="max-width:100px;">
+                                            <p class="text-muted small mb-0">No sales records found</p>
+                                        </div>
+                                    </center>
+                                </td>
+                            </tr>
+                          ';
                         }
                       ?>
                     </tbody>

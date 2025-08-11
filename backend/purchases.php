@@ -471,19 +471,36 @@ if ($row = $result->fetch_assoc()) {
                     </thead>
                     <tbody>
                       <?php
-                        $psql = mysqli_query($dbcon,"SELECT * FROM purchases ORDER BY id DESC");
-                        while($prop = mysqli_fetch_array($psql)) {
-                          $totalCost = $prop['price'] * $prop['package'];
-                      ?>
-                      <tr>
-                        <td data-label="Product"><?php echo htmlspecialchars($prop['product']); ?></td>
-                        <td data-label="Company"><?php echo htmlspecialchars($prop['company']); ?></td>
-                        <td data-label="Price">&#8358;<?php echo number_format($prop['price']); ?></td>
-                        <td data-label="Package(s)" class="text-center"><?php echo htmlspecialchars($prop['package']) . ' pkg'; ?></td>
-                        <td data-label="Cost" class="text-center">&#8358;<?php echo number_format($totalCost); ?></td>
-                        <td data-label="Transaction" class="text-center"><?php echo htmlspecialchars($prop['transaction']); ?></td>
-                      </tr>
-                      <?php } ?>
+                        $psql = mysqli_query($dbcon, "SELECT * FROM purchases ORDER BY id DESC");
+
+                        if (mysqli_num_rows($psql) > 0) {
+                            while ($prop = mysqli_fetch_array($psql)) {
+                                $totalCost = $prop['price'] * $prop['package'];
+                                ?>
+                                <tr>
+                                    <td data-label="Product"><?php echo htmlspecialchars($prop['product']); ?></td>
+                                    <td data-label="Company"><?php echo htmlspecialchars($prop['company']); ?></td>
+                                    <td data-label="Price">&#8358;<?php echo number_format($prop['price']); ?></td>
+                                    <td data-label="Package(s)" class="text-center"><?php echo htmlspecialchars($prop['package']) . ' pkg'; ?></td>
+                                    <td data-label="Cost" class="text-center">&#8358;<?php echo number_format($totalCost); ?></td>
+                                    <td data-label="Transaction" class="text-center"><?php echo htmlspecialchars($prop['transaction']); ?></td>
+                                </tr>
+                                <?php
+                            }
+                        } else {
+                            echo '
+                            <tr>
+                                <td colspan="6" class="text-center p-4">
+                                    <center>
+                                        <div class="no-records-found">
+                                            <img src="../assets/img/no-data.png" alt="No records found" class="img-fluid" style="max-width:100px;">
+                                            <p class="text-muted small mb-0">No sales records found</p>
+                                        </div>
+                                    </center>
+                                </td>
+                            </tr>';
+                        }
+                        ?>
 
                       
                     </tbody>

@@ -351,27 +351,46 @@ if ($row = $result->fetch_assoc()) {
                     </thead>
                     <tbody>
                       <?php
-                        $sn=1;
-                        $psql = mysqli_query($dbcon,"SELECT * FROM distributors ORDER BY id DESC");
-                        while($prop = mysqli_fetch_array($psql)){ ?>
-                      <tr>
-                        <td class="p-2 text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo $prop['company']; ?></p>
-                        </td>
-                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <p  class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo $prop['location']; ?></p>
-                        </td>
-                        <td class="p-2 text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <p  class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo $prop['phone']; ?></p>
-                        </td>
-                        <td class="p-2 align-middle text-center bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                          <form method="POST">
-                            <input type="hidden" value="<?php echo $sn++; ?>" name="id">
-                            <button type="submit" class="text-xs font-semibold leading-tight dark:text-white dark:opacity-80 text-slate-400" name="delete_distributor"> Delete </button>
-                        </form>
-                        </td>
-                      </tr>
-                      <?php } ?>
+                        $sn = 1;
+                        $psql = mysqli_query($dbcon, "SELECT * FROM distributors ORDER BY id DESC");
+
+                        if (mysqli_num_rows($psql) > 0) {
+                            while ($prop = mysqli_fetch_array($psql)) {
+                                ?>
+                                <tr>
+                                    <td class="p-2 text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                        <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo htmlspecialchars($prop['company']); ?></p>
+                                    </td>
+                                    <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                        <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo htmlspecialchars($prop['location']); ?></p>
+                                    </td>
+                                    <td class="p-2 text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                        <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo htmlspecialchars($prop['phone']); ?></p>
+                                    </td>
+                                    <td class="p-2 align-middle text-center bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                        <form method="POST">
+                                            <input type="hidden" value="<?php echo $sn++; ?>" name="id">
+                                            <button type="submit" class="text-xs font-semibold leading-tight dark:text-white dark:opacity-80 text-slate-400" name="delete_distributor">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <?php
+                            }
+                        } else {
+                            echo '
+                            <tr>
+                                <td colspan="4" class="text-center p-4">
+                                    <center>
+                                        <div class="no-records-found">
+                                            <img src="../assets/img/no-data.png" alt="No records found" class="img-fluid" style="max-width:100px;">
+                                            <p class="text-muted small mb-0">No sales records found</p>
+                                        </div>
+                                    </center>
+                                </td>
+                            </tr>';
+                        }
+                        ?>
+
                      
                       
                     </tbody>

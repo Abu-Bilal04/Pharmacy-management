@@ -273,10 +273,9 @@ if ($row = $result->fetch_assoc()) {
         </small>
 
         <br>
-        <br>
-        <!-- row 1 Today-->
+        <br><!-- row 1 Today-->
         <div class="flex flex-wrap -mx-3">
-          <!-- card1 -->
+          <!-- card1 - Balance -->
           <div class="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
             <div class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
               <div class="flex-auto p-4">
@@ -286,38 +285,33 @@ if ($row = $result->fetch_assoc()) {
                       <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">Balance</p>
                       <h5 class="mb-2 font-bold dark:text-white">
                         <?php
-                          // // Get today's purchases
                           $today = date('Y-m-d');
 
-                          // Total sales (price * quantity)
                           $sales_query = "SELECT SUM(price) AS total_sales FROM sales WHERE DATE(timestamp) = '$today'";
                           $sales_result = mysqli_query($dbcon, $sales_query);
                           $sales_row = mysqli_fetch_assoc($sales_result);
                           $total_sales = $sales_row['total_sales'] ?? 0;
 
-                          // Total purchases (price)
                           $purchases_query = "SELECT SUM(price) AS total_purchases FROM purchases WHERE DATE(timestamp) = '$today'";
                           $purchases_result = mysqli_query($dbcon, $purchases_query);
                           $purchases_row = mysqli_fetch_assoc($purchases_result);
                           $total_purchases = $purchases_row['total_purchases'] ?? 0;
 
-                          // Total expenses (price)
                           $expenses_query = "SELECT SUM(price) AS total_expenses FROM expenses WHERE DATE(timestamp) = '$today'";
                           $expenses_result = mysqli_query($dbcon, $expenses_query);
                           $expenses_row = mysqli_fetch_assoc($expenses_result);
                           $total_expenses = $expenses_row['total_expenses'] ?? 0;
 
-                          // Calculate balance
                           $balance = $total_sales - $total_purchases - $total_expenses;
 
                           echo "&#8358;" . number_format($balance, 2);
-                          ?>
+                        ?>
                       </h5>
                     </div>
                   </div>
                   <div class="px-3 text-right basis-1/3">
                     <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-blue-500 to-violet-500">
-                      <i class="ni leading-none ni-money-coins text-lg relative top-3.5 text-white"></i>
+                      <i class="ni leading-none ni-credit-card text-lg relative top-3.5 text-white"></i>
                     </div>
                   </div>
                 </div>
@@ -325,7 +319,7 @@ if ($row = $result->fetch_assoc()) {
             </div>
           </div>
 
-          <!-- card2 -->
+          <!-- card2 - Purchases -->
           <div class="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
             <div class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
               <div class="flex-auto p-4">
@@ -335,26 +329,23 @@ if ($row = $result->fetch_assoc()) {
                       <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">Purchases</p>
                       <h5 class="mb-2 font-bold dark:text-white">
                         <?php
-                          // // Get today's purchases
                           $today = date('Y-m-d');
 
-                          // Total purchases (price * quantity)
                           $today_purchases_query = "SELECT SUM(price * package) AS today_total_purchases 
-                          FROM purchases 
-                          WHERE DATE(timestamp) = '$today'";  // Add quotes and DATE() function
+                                                    FROM purchases 
+                                                    WHERE DATE(timestamp) = '$today'";
                           $today_purchases_result = mysqli_query($dbcon, $today_purchases_query);
                           $today_purchases_row = mysqli_fetch_assoc($today_purchases_result);
                           $today_total_purchases = $today_purchases_row['today_total_purchases'] ?? 0;
 
-                          // Format with Naira symbol and thousands separator
                           echo "&#8358;" . number_format($today_total_purchases, 2);
-                          ?>
+                        ?>
                       </h5>
                     </div>
                   </div>
                   <div class="px-3 text-right basis-1/3">
                     <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-red-600 to-orange-600">
-                      <i class="ni leading-none ni-world text-lg relative top-3.5 text-white"></i>
+                      <i class="ni leading-none ni-cart text-lg relative top-3.5 text-white"></i>
                     </div>
                   </div>
                 </div>
@@ -362,7 +353,7 @@ if ($row = $result->fetch_assoc()) {
             </div>
           </div>
 
-          <!-- card3 -->
+          <!-- card3 - Sales -->
           <div class="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
             <div class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
               <div class="flex-auto p-4">
@@ -372,26 +363,23 @@ if ($row = $result->fetch_assoc()) {
                       <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">Sales</p>
                       <h5 class="mb-2 font-bold dark:text-white">
                         <?php
-                          // // Get today's sales
                           $today = date('Y-m-d');
 
-                          // Total sales (price)
                           $today_sales_query = "SELECT SUM(price) AS today_total_sales 
-                          FROM sales 
-                          WHERE DATE(timestamp) = '$today'";  // Add quotes and DATE() function
+                                                FROM sales 
+                                                WHERE DATE(timestamp) = '$today'";
                           $today_sales_result = mysqli_query($dbcon, $today_sales_query);
                           $today_sales_row = mysqli_fetch_assoc($today_sales_result);
                           $today_total_sales = $today_sales_row['today_total_sales'] ?? 0;
 
-                          // Format with Naira symbol and thousands separator
                           echo "&#8358;" . number_format($today_total_sales, 2);
-                          ?>
+                        ?>
                       </h5>
                     </div>
                   </div>
                   <div class="px-3 text-right basis-1/3">
-                    <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-red-600 to-orange-600">
-                      <i class="ni leading-none ni-world text-lg relative top-3.5 text-white"></i>
+                    <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-green-500 to-lime-500">
+                      <i class="ni leading-none ni-shop text-lg relative top-3.5 text-white"></i>
                     </div>
                   </div>
                 </div>
@@ -399,7 +387,7 @@ if ($row = $result->fetch_assoc()) {
             </div>
           </div>
 
-          <!-- card4 -->
+          <!-- card4 - Expense -->
           <div class="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
             <div class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
               <div class="flex-auto p-4">
@@ -409,39 +397,36 @@ if ($row = $result->fetch_assoc()) {
                       <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">Expense</p>
                       <h5 class="mb-2 font-bold dark:text-white">
                         <?php
-                          // // Get today's expenses
                           $today = date('Y-m-d');
 
-                          // Total expenses (price * quantity)
                           $today_expenses_query = "SELECT SUM(price) AS today_total_expenses 
-                          FROM expenses 
-                          WHERE DATE(timestamp) = '$today'";  // Add quotes and DATE() function
+                                                  FROM expenses 
+                                                  WHERE DATE(timestamp) = '$today'";
                           $today_expenses_result = mysqli_query($dbcon, $today_expenses_query);
                           $today_expenses_row = mysqli_fetch_assoc($today_expenses_result);
                           $today_total_expenses = $today_expenses_row['today_total_expenses'] ?? 0;
 
-                          // Format with Naira symbol and thousands separator
                           echo "&#8358;" . number_format($today_total_expenses, 2);
-                          ?>
+                        ?>
                       </h5>
                     </div>
                   </div>
                   <div class="px-3 text-right basis-1/3">
-                    <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-red-600 to-orange-600">
-                      <i class="ni leading-none ni-world text-lg relative top-3.5 text-white"></i>
+                    <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-yellow-500 to-red-500">
+                      <i class="ni leading-none ni-chart-pie-35 text-lg relative top-3.5 text-white"></i>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          
         </div>
 
         <br>
+
         <!-- row 2 Total -->
         <div class="flex flex-wrap -mx-3">
-          <!-- card1 -->
+          <!-- card1 - Total Balance -->
           <div class="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
             <div class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
               <div class="flex-auto p-4">
@@ -451,35 +436,31 @@ if ($row = $result->fetch_assoc()) {
                       <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">Total Balance</p>
                       <h5 class="mb-2 font-bold dark:text-white">
                         <?php
-                          // Total sales (price * quantity)
                           $sales_query = "SELECT SUM(price) AS total_sales FROM sales";
                           $sales_result = mysqli_query($dbcon, $sales_query);
                           $sales_row = mysqli_fetch_assoc($sales_result);
                           $total_sales = $sales_row['total_sales'] ?? 0;
 
-                          // Total purchases (price)
                           $purchases_query = "SELECT SUM(price) AS total_purchases FROM purchases";
                           $purchases_result = mysqli_query($dbcon, $purchases_query);
                           $purchases_row = mysqli_fetch_assoc($purchases_result);
                           $total_purchases = $purchases_row['total_purchases'] ?? 0;
 
-                          // Total expenses (price)
                           $expenses_query = "SELECT SUM(price) AS total_expenses FROM expenses";
                           $expenses_result = mysqli_query($dbcon, $expenses_query);
                           $expenses_row = mysqli_fetch_assoc($expenses_result);
                           $total_expenses = $expenses_row['total_expenses'] ?? 0;
 
-                          // Calculate balance
                           $balance = $total_sales - $total_purchases - $total_expenses;
 
-                          echo "&#8358;" . number_format($balance,2);
-                          ?>
+                          echo "&#8358;" . number_format($balance, 2);
+                        ?>
                       </h5>
                     </div>
                   </div>
                   <div class="px-3 text-right basis-1/3">
                     <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-blue-500 to-violet-500">
-                      <i class="ni leading-none ni-money-coins text-lg relative top-3.5 text-white"></i>
+                      <i class="ni leading-none ni-credit-card text-lg relative top-3.5 text-white"></i>
                     </div>
                   </div>
                 </div>
@@ -487,7 +468,7 @@ if ($row = $result->fetch_assoc()) {
             </div>
           </div>
 
-          <!-- card2 -->
+          <!-- card2 - Total Purchases -->
           <div class="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
             <div class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
               <div class="flex-auto p-4">
@@ -497,23 +478,19 @@ if ($row = $result->fetch_assoc()) {
                       <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">Total Purchases</p>
                       <h5 class="mb-2 font-bold dark:text-white">
                         <?php
-                          
-                          // Total purchases (price * quantity)
-                          $today_purchases_query = "SELECT SUM(price * package) AS today_total_purchases 
-                          FROM purchases";  // Add quotes and DATE() function
+                          $today_purchases_query = "SELECT SUM(price * package) AS today_total_purchases FROM purchases";
                           $today_purchases_result = mysqli_query($dbcon, $today_purchases_query);
                           $today_purchases_row = mysqli_fetch_assoc($today_purchases_result);
                           $today_total_purchases = $today_purchases_row['today_total_purchases'] ?? 0;
 
-                          // Format with Naira symbol and thousands separator
                           echo "&#8358;" . number_format($today_total_purchases, 2);
-                          ?>
+                        ?>
                       </h5>
                     </div>
                   </div>
                   <div class="px-3 text-right basis-1/3">
                     <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-red-600 to-orange-600">
-                      <i class="ni leading-none ni-world text-lg relative top-3.5 text-white"></i>
+                      <i class="ni leading-none ni-cart text-lg relative top-3.5 text-white"></i>
                     </div>
                   </div>
                 </div>
@@ -521,7 +498,7 @@ if ($row = $result->fetch_assoc()) {
             </div>
           </div>
 
-          <!-- card3 -->
+          <!-- card3 - Total Sales -->
           <div class="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
             <div class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
               <div class="flex-auto p-4">
@@ -531,22 +508,19 @@ if ($row = $result->fetch_assoc()) {
                       <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">Total Sales</p>
                       <h5 class="mb-2 font-bold dark:text-white">
                         <?php
-                          // Total sales (price * quantity)
-                          $sales_query = "SELECT SUM(price) AS total_sales 
-                          FROM sales ";  // Add quotes and DATE() function
+                          $sales_query = "SELECT SUM(price) AS total_sales FROM sales";
                           $sales_result = mysqli_query($dbcon, $sales_query);
                           $sales_row = mysqli_fetch_assoc($sales_result);
                           $total_sales = $sales_row['total_sales'] ?? 0;
 
-                          // Format with Naira symbol and thousands separator
                           echo "&#8358;" . number_format($total_sales, 2);
-                          ?>
+                        ?>
                       </h5>
                     </div>
                   </div>
                   <div class="px-3 text-right basis-1/3">
-                    <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-red-600 to-orange-600">
-                      <i class="ni leading-none ni-world text-lg relative top-3.5 text-white"></i>
+                    <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-green-500 to-lime-500">
+                      <i class="ni leading-none ni-shop text-lg relative top-3.5 text-white"></i>
                     </div>
                   </div>
                 </div>
@@ -554,7 +528,7 @@ if ($row = $result->fetch_assoc()) {
             </div>
           </div>
 
-          <!-- card4 -->
+          <!-- card4 - Total Expenses -->
           <div class="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
             <div class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
               <div class="flex-auto p-4">
@@ -564,29 +538,25 @@ if ($row = $result->fetch_assoc()) {
                       <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">Total Expenses</p>
                       <h5 class="mb-2 font-bold dark:text-white">
                         <?php
-                          // Total expenses (price * quantity)
-                          $today_expenses_query = "SELECT SUM(price) AS today_total_expenses 
-                          FROM expenses";
+                          $today_expenses_query = "SELECT SUM(price) AS today_total_expenses FROM expenses";
                           $today_expenses_result = mysqli_query($dbcon, $today_expenses_query);
                           $today_expenses_row = mysqli_fetch_assoc($today_expenses_result);
                           $today_total_expenses = $today_expenses_row['today_total_expenses'] ?? 0;
 
-                          // Format with Naira symbol and thousands separator
                           echo "&#8358;" . number_format($today_total_expenses, 2);
-                          ?>
+                        ?>
                       </h5>
                     </div>
                   </div>
                   <div class="px-3 text-right basis-1/3">
-                    <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-red-600 to-orange-600">
-                      <i class="ni leading-none ni-world text-lg relative top-3.5 text-white"></i>
+                    <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-yellow-500 to-red-500">
+                      <i class="ni leading-none ni-chart-pie-35 text-lg relative top-3.5 text-white"></i>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          
         </div>
 
         
