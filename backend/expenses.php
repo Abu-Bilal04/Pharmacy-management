@@ -49,6 +49,9 @@ if ($row = $result->fetch_assoc()) {
     <script src="https://unpkg.com/@popperjs/core@2"></script>
     <!-- Main Styling -->
     <link href="../assets/css/argon-dashboard-tailwind.css?v=1.0.1" rel="stylesheet" />
+    <!-- Add DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
   </head>
 
   <body class="m-0 font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-gray-50 text-slate-500">
@@ -309,121 +312,91 @@ if ($row = $result->fetch_assoc()) {
            
               <div class="flex-auto p-6 pt-0">
                 <br>
-                <table class="items-center w-full mb-0 align-top border-collapse dark:border-white/40 text-slate-500">
-                    Manage Records <br>
-                    <thead class="align-bottom">
+                <table id="expensesTable" class="items-center w-full mb-0 align-top border-collapse dark:border-white/40 text-slate-500">
+                  Manage Records <br>
+                  <thead class="align-bottom">
                       <tr>
-                        <small style="color: blue">
-                          POS:  <?php
-                            // Query to get the total POS transactions
-                            $querys = "SELECT SUM(price) AS total_pos 
-                                      FROM expenses 
-                                      WHERE transaction = 'POS'";
+                          <small style="color: blue">
+                              POS:  
+                              <?php
+                              $querys = "SELECT SUM(price) AS total_pos FROM expenses WHERE transaction = 'POS'";
+                              $result = mysqli_query($dbcon, $querys);
+                              $row = mysqli_fetch_assoc($result);
+                              echo "&#8358;" . number_format($row['total_pos'] ?? 0, 2);
+                              ?>
 
-                            $result = mysqli_query($dbcon, $querys);
+                              - Transfer:  
+                              <?php
+                              $querys = "SELECT SUM(price) AS total_transfer FROM expenses WHERE transaction = 'Transfer'";
+                              $result = mysqli_query($dbcon, $querys);
+                              $row = mysqli_fetch_assoc($result);
+                              echo "&#8358;" . number_format($row['total_transfer'] ?? 0, 2);
+                              ?>
 
-                            if (!$result) {
-                                // Handle query error
-                                echo "Error: " . mysqli_error($dbcon);
-                            } else {
-                                $row = mysqli_fetch_assoc($result);
-                                // If no POS transactions, set to 0
-                                $total_pos = $row['total_pos'] ?? 0;
-                                // Display formatted with Naira symbol
-                                echo "&#8358;" . number_format($total_pos, 2);
-                            }
-                            ?>
-                    
-                  
-                          - Transfer:  <?php
-                            // Query to get the total POS transactions
-                            $querys = "SELECT SUM(price) AS total_pos 
-                                      FROM expenses 
-                                      WHERE transaction = 'Transfer'";
-
-                            $result = mysqli_query($dbcon, $querys);
-
-                            if (!$result) {
-                                // Handle query error
-                                echo "Error: " . mysqli_error($dbcon);
-                            } else {
-                                $row = mysqli_fetch_assoc($result);
-                                // If no POS transactions, set to 0
-                                $total_pos = $row['total_pos'] ?? 0;
-                                // Display formatted with Naira symbol
-                                echo "&#8358;" . number_format($total_pos, 2);
-                            }
-                            ?>
-                    
-                  
-                          - Cash:  <?php
-                            // Query to get the total POS transactions
-                            $querys = "SELECT SUM(price) AS total_pos 
-                                      FROM expenses 
-                                      WHERE transaction = 'cash'";
-
-                            $result = mysqli_query($dbcon, $querys);
-
-                            if (!$result) {
-                                // Handle query error
-                                echo "Error: " . mysqli_error($dbcon);
-                            } else {
-                                $row = mysqli_fetch_assoc($result);
-                                // If no POS transactions, set to 0
-                                $total_pos = $row['total_pos'] ?? 0;
-                                // Display formatted with Naira symbol
-                                echo "&#8358;" . number_format($total_pos, 2);
-                            }
-                            ?>
-                      </small>
+                              - Cash:  
+                              <?php
+                              $querys = "SELECT SUM(price) AS total_cash FROM expenses WHERE transaction = 'cash'";
+                              $result = mysqli_query($dbcon, $querys);
+                              $row = mysqli_fetch_assoc($result);
+                              echo "&#8358;" . number_format($row['total_cash'] ?? 0, 2);
+                              ?>
+                          </small>
                       </tr>
-                      
+
                       <tr>
-                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Product</th>
-                        <th class="px-6 py-3 pl-2 font-bold text-center uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Price</th>
-                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">Type</th>
+                          <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">
+                              Product
+                          </th>
+                          <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">
+                              Price
+                          </th>
+                          <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-90">
+                              Type
+                          </th>
                       </tr>
-                    </thead>
-                    <tbody>
-                       <?php
-                          $psql = mysqli_query($dbcon, "SELECT * FROM expenses ORDER BY id DESC");
+                  </thead>
+                  <tbody>
+                      <?php
+                      $psql = mysqli_query($dbcon, "SELECT * FROM expenses ORDER BY id DESC");
 
-                          if (mysqli_num_rows($psql) > 0) {
-                              while ($prop = mysqli_fetch_array($psql)) {
-                                  ?>
-                                  <tr>
-                                      <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap text-center shadow-transparent">
-                                          <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo htmlspecialchars($prop['item']); ?></p>
-                                      </td>
-                                      <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent text-center">
-                                          <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">
-                                              &#8358; <?php echo number_format($prop['price']); ?>
-                                          </p>
-                                      </td>
-                                      <td class="p-2 text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                                          <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo htmlspecialchars($prop['transaction']); ?></p>
-                                      </td>
-                                  </tr>
-                                  <?php
-                              }
-                          } else {
-                              echo '
+                      if (mysqli_num_rows($psql) > 0) {
+                          while ($prop = mysqli_fetch_array($psql)) {
+                              ?>
                               <tr>
-                                  <td colspan="4" class="text-center p-4">
-                                      <center>
-                                          <div class="no-records-found">
-                                              <img src="../assets/img/no-data.png" alt="No records found" class="img-fluid" style="max-width:100px;">
-                                              <p class="text-muted small mb-0">No sales records found</p>
-                                          </div>
-                                      </center>
+                                  <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap text-center shadow-transparent">
+                                      <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">
+                                          <?php echo htmlspecialchars($prop['item']); ?>
+                                      </p>
                                   </td>
-                              </tr>';
+                                  <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap text-center shadow-transparent">
+                                      <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">
+                                          &#8358; <?php echo number_format($prop['price']); ?>
+                                      </p>
+                                  </td>
+                                  <td class="p-2 text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                      <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">
+                                          <?php echo htmlspecialchars($prop['transaction']); ?>
+                                      </p>
+                                  </td>
+                              </tr>
+                              <?php
                           }
-                          ?>
-
-                      
-                    </tbody>
-                  </table>
+                      } else {
+                          echo '
+                          <tr>
+                              <td colspan="3" class="text-center p-4">
+                                  <center>
+                                      <div class="no-records-found">
+                                          <img src="../assets/img/no-data.png" alt="No records found" class="img-fluid" style="max-width:100px;">
+                                          <p class="text-muted small mb-0">No sales records found</p>
+                                      </div>
+                                  </center>
+                              </td>
+                          </tr>';
+                      }
+                      ?>
+                  </tbody>
+              </table>
               </div>
             </div>
           </div>
@@ -440,4 +413,32 @@ if ($row = $result->fetch_assoc()) {
   <script src="../assets/js/plugins/perfect-scrollbar.min.js" async></script>
   <!-- main script file  -->
   <script src="../assets/js/argon-dashboard-tailwind.js?v=1.0.1" async></script>
+
+  <!-- jQuery + DataTables + Buttons + PDFMake -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+
+  <script>
+  $(document).ready(function() {
+      $('#expensesTable').DataTable({
+          dom: 'Bfrtip',
+          buttons: [
+              {
+                  extend: 'pdfHtml5',
+                  text: '⬇ Download PDF',
+                  className: 'bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700',
+                  title: 'Expenses Records',
+                  exportOptions: {
+                      columns: [0, 1, 2] // Export Product, Price, Type
+                  }
+              }
+          ]
+      });
+  });
+  </script>
+
 </html>

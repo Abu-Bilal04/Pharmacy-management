@@ -46,6 +46,9 @@ if ($row = $result->fetch_assoc()) {
     <script src="https://unpkg.com/@popperjs/core@2"></script>
     <!-- Main Styling -->
     <link href="../assets/css/argon-dashboard-tailwind.css?v=1.0.1" rel="stylesheet" />
+    <!-- Add DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
   </head>
 
   <body class="m-0 font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-gray-50 text-slate-500">
@@ -227,43 +230,53 @@ if ($row = $result->fetch_assoc()) {
               </div>
               <div class="flex-auto px-0 pt-0 pb-2">
                 <div class="p-0 overflow-x-auto">
-                  <table class="items-center w-full mb-0 align-top border-collapse dark:border-white/40 text-slate-500">
-                    <thead class="align-bottom">
-                      <tr>
-                        <th class="text-center px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">S/No</th>
-                        <th class="px-6 py-3 pl-2 font-bold text-left uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Product</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <?php
-                        $sn = 1;
-                        // Get all products with their total purchased and sold quantities
-                        $query = "
-                          SELECT 
-                            p.product,
-                            SUM(p.package * p.quantity) AS total_purchased,
-                            IFNULL(SUM(s.quantity), 0) AS total_sold,
-                            (SUM(p.package * p.quantity) - IFNULL(SUM(s.quantity), 0)) AS stock_left
-                          FROM purchases p
-                          LEFT JOIN sales s ON s.product = p.product
-                          GROUP BY p.product
-                          HAVING stock_left < 10
-                          ORDER BY stock_left ASC
-                        ";
-                        $result = mysqli_query($dbcon, $query);
-                        while ($row = mysqli_fetch_assoc($result)) {
-                      ?>
-                        <tr>
-                          <td class="p-2 text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                            <span class="text-xs font-semibold leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo $sn++; ?></span>
-                          </td>
-                          <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                            <span class="text-xs font-semibold leading-tight dark:text-white dark:opacity-80 text-slate-400"><?php echo htmlspecialchars($row['product']); ?></span>
-                          </td>
-                        </tr>
-                      <?php } ?>
-                    </tbody>
-                  </table>
+                  <table id="lowStockTable" style="padding:3vh" class="items-center w-full mb-0 align-top border-collapse dark:border-white/40 text-slate-500">
+    <thead class="align-bottom">
+        <tr>
+            <th class="text-center px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                S/No
+            </th>
+            <th class="px-6 py-3 pl-2 font-bold text-left uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                Product
+            </th>
+            <th class="px-6 py-3 pl-2 font-bold text-left uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                Stock Left
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php
+        $query = "
+            SELECT 
+                p.product,
+                (p.total_purchased - IFNULL(s.total_sold, 0)) AS stock_left
+            FROM (
+                SELECT product, SUM(package * quantity) AS total_purchased
+                FROM purchases
+                GROUP BY product
+            ) p
+            LEFT JOIN (
+                SELECT product, SUM(quantity) AS total_sold
+                FROM sales
+                GROUP BY product
+            ) s ON p.product = s.product
+            HAVING stock_left < 10
+            ORDER BY stock_left ASC
+        ";
+        $result = mysqli_query($dbcon, $query);
+
+        $sn = 1;
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<tr class='border-b dark:border-white/40'>
+                    <td class='text-center px-6 py-3'>{$sn}</td>
+                    <td class='px-6 py-3'>" . htmlspecialchars($row['product']) . "</td>
+                    <td class='px-6 py-3 text-red-500 font-bold'>" . htmlspecialchars($row['stock_left']) . "</td>
+                  </tr>";
+            $sn++;
+        }
+        ?>
+    </tbody>
+</table>
                 </div>
               </div>
             </div>
@@ -281,4 +294,30 @@ if ($row = $result->fetch_assoc()) {
   <script src="../assets/js/plugins/perfect-scrollbar.min.js" async></script>
   <!-- main script file  -->
   <script src="../assets/js/argon-dashboard-tailwind.js?v=1.0.1" async></script>
-</html>
+  
+  <!-- jQuery + DataTables + Buttons + PDFMake -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+
+  <script>
+  $(document).ready(function() {
+      $('#lowStockTable').DataTable({
+          dom: 'Bfrtip',
+          buttons: [
+              {
+                  extend: 'pdfHtml5',
+                  text: 'Download PDF',
+                  title: 'Low Stock Products',
+                  exportOptions: {
+                      columns: [0,1] // export only S/No and Product
+                  }
+              }
+          ]
+      });
+  });
+  </script>
+  </html>

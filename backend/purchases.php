@@ -49,6 +49,9 @@ if ($row = $result->fetch_assoc()) {
     <script src="https://unpkg.com/@popperjs/core@2"></script>
     <!-- Main Styling -->
     <link href="../assets/css/argon-dashboard-tailwind.css?v=1.0.1" rel="stylesheet" />
+    <!-- Add DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
 
 
   <style>
@@ -390,87 +393,48 @@ if ($row = $result->fetch_assoc()) {
            
               <div class="flex-auto p-6 pt-0">
                 <br>
-                  <table class="items-center w-full mb-0 align-top border-collapse dark:border-white/40 text-slate-500">
+                  <table id="purchasesTable" class="items-center w-full mb-0 align-top border-collapse dark:border-white/40 text-slate-500">
                     <caption style="text-align:left; font-weight:bold; margin-bottom:10px;">Manage Records</caption>
-                    
                     <thead>
-                      <tr>
-                        <small style="color: blue">
-                          POS:  <?php
-                            // Query to get the total POS transactions
-                            $querys = "SELECT SUM(price * package) AS total_pos 
-                                      FROM purchases 
-                                      WHERE transaction = 'POS'";
-
-                            $result = mysqli_query($dbcon, $querys);
-
-                            if (!$result) {
-                                // Handle query error
-                                echo "Error: " . mysqli_error($dbcon);
-                            } else {
+                        <tr>
+                            <small style="color: blue">
+                                POS:  
+                                <?php
+                                $querys = "SELECT SUM(price * package) AS total_pos FROM purchases WHERE transaction = 'POS'";
+                                $result = mysqli_query($dbcon, $querys);
                                 $row = mysqli_fetch_assoc($result);
-                                // If no POS transactions, set to 0
-                                $total_pos = $row['total_pos'] ?? 0;
-                                // Display formatted with Naira symbol
-                                echo "&#8358;" . number_format($total_pos, 2);
-                            }
-                            ?>
-                    
-                  
-                          - Transfer:  <?php
-                            // Query to get the total POS transactions
-                            $querys = "SELECT SUM(price * package) AS total_pos 
-                                      FROM purchases 
-                                      WHERE transaction = 'Transfer'";
+                                echo "&#8358;" . number_format($row['total_pos'] ?? 0, 2);
+                                ?>
 
-                            $result = mysqli_query($dbcon, $querys);
-
-                            if (!$result) {
-                                // Handle query error
-                                echo "Error: " . mysqli_error($dbcon);
-                            } else {
+                                - Transfer:  
+                                <?php
+                                $querys = "SELECT SUM(price * package) AS total_transfer FROM purchases WHERE transaction = 'Transfer'";
+                                $result = mysqli_query($dbcon, $querys);
                                 $row = mysqli_fetch_assoc($result);
-                                // If no POS transactions, set to 0
-                                $total_pos = $row['total_pos'] ?? 0;
-                                // Display formatted with Naira symbol
-                                echo "&#8358;" . number_format($total_pos, 2);
-                            }
-                            ?>
-                    
-                  
-                          - Cash:  <?php
-                            // Query to get the total POS transactions
-                            $querys = "SELECT SUM(price * package) AS total_pos 
-                                      FROM purchases 
-                                      WHERE transaction = 'cash'";
+                                echo "&#8358;" . number_format($row['total_transfer'] ?? 0, 2);
+                                ?>
 
-                            $result = mysqli_query($dbcon, $querys);
-
-                            if (!$result) {
-                                // Handle query error
-                                echo "Error: " . mysqli_error($dbcon);
-                            } else {
+                                - Cash:  
+                                <?php
+                                $querys = "SELECT SUM(price * package) AS total_cash FROM purchases WHERE transaction = 'cash'";
+                                $result = mysqli_query($dbcon, $querys);
                                 $row = mysqli_fetch_assoc($result);
-                                // If no POS transactions, set to 0
-                                $total_pos = $row['total_pos'] ?? 0;
-                                // Display formatted with Naira symbol
-                                echo "&#8358;" . number_format($total_pos, 2);
-                            }
-                            ?>
-                      </small>
-                      </tr>
-                      <hr>
-                      <tr>
-                        <th>Product</th>
-                        <th>Company</th>
-                        <th>Price</th>
-                        <th>Package(s)</th>
-                        <th>Cost</th>
-                        <th>Transaction</th>
-                      </tr>
+                                echo "&#8358;" . number_format($row['total_cash'] ?? 0, 2);
+                                ?>
+                            </small>
+                        </tr>
+
+                        <tr>
+                            <th>Product</th>
+                            <th>Company</th>
+                            <th>Price</th>
+                            <th>Package(s)</th>
+                            <th>Cost</th>
+                            <th>Transaction</th>
+                        </tr>
                     </thead>
                     <tbody>
-                      <?php
+                        <?php
                         $psql = mysqli_query($dbcon, "SELECT * FROM purchases ORDER BY id DESC");
 
                         if (mysqli_num_rows($psql) > 0) {
@@ -494,17 +458,15 @@ if ($row = $result->fetch_assoc()) {
                                     <center>
                                         <div class="no-records-found">
                                             <img src="../assets/img/no-data.png" alt="No records found" class="img-fluid" style="max-width:100px;">
-                                            <p class="text-muted small mb-0">No sales records found</p>
+                                            <p class="text-muted small mb-0">No purchase records found</p>
                                         </div>
                                     </center>
                                 </td>
                             </tr>';
                         }
                         ?>
-
-                      
                     </tbody>
-                  </table> 
+                </table>
                 </div>
             </div>
           </div>
@@ -522,4 +484,30 @@ if ($row = $result->fetch_assoc()) {
   <script src="../assets/js/plugins/perfect-scrollbar.min.js" async></script>
   <!-- main script file  -->
   <script src="../assets/js/argon-dashboard-tailwind.js?v=1.0.1" async></script>
+    <!-- jQuery + DataTables + Buttons + PDFMake -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+
+  <script>
+  $(document).ready(function() {
+      $('#purchasesTable').DataTable({
+          dom: 'Bfrtip',
+          buttons: [
+              {
+                  extend: 'pdfHtml5',
+                  text: '⬇ Download PDF',
+                  className: 'bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700',
+                  title: 'Purchases Records',
+                  exportOptions: {
+                      columns: [0, 1, 2, 3, 4, 5] // Export all columns
+                  }
+              }
+          ]
+      });
+  });
+  </script>
 </html>
