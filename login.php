@@ -40,7 +40,7 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(to bottom right, rgba(59,130,246,0.6), rgba(99,102,241,0.6));
+      background: linear-gradient(to bottom right, white, white);
     }
     .login-image-text {
       position: relative;
@@ -49,7 +49,7 @@
     }
   </style>
 </head>
-<body>
+<body style="background-image: url('assets/img/Polygon Luminary.svg'); background-color: #85b2f9ff">
 
 <?php if (isset($_GET['msg']) && $_GET['msg'] == "error") { ?>
 <script>
@@ -67,8 +67,7 @@
   <!-- Left Image Panel -->
   <div class="col-md-6 d-none d-md-block login-image p-5 d-flex align-items-center justify-content-center text-center">
     <div class="login-image-text">
-      <h4 class="fw-bold mb-3">"Attention is the new currency"</h4>
-      <p class="lead">The more effortless the writing looks, the more effort the writer actually put into the process.</p>
+      <img src="assets/img/logo.jpg" width="100%">
     </div>
   </div>
 
